@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from src.service.collector import RaceDataCollector
+from src.collector import RaceDataCollector
 from src.utils.date_utils import get_today_jst, normalize_date_format
 from src.constants.master_data import JYO_NAME_MAP
 
