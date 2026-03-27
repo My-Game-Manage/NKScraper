@@ -5,11 +5,31 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import WebDriverException
 
+from src.utils.logger import setup_logger
+
 class NetKeibaClient:
     def __init__(self, headless=True):
+        """
+        初期化： Driverの初期化
+        """
         self.driver = self._setup_driver(headless)
+        
+        # クラス名を名前としてロガーを作成
+        self.logger = setup_logger("NetkeibaClient")
+
+    def quit(self):
+        """
+        Driverの正常終了
+        """
+        if self.driver:
+            self.driver.quit()
 
     def _setup_driver(self, headless):
+        """
+        Driverの初期化
+        """
+        self.logger.info("Driverの初期化中...")
+        
         options = Options()
         if headless:
             options.add_argument('--headless=new')
@@ -19,4 +39,6 @@ class NetKeibaClient:
         
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.set_page_load_timeout(30)
+        
+        self.logger.info("Driverの準備ができました")
         return driver
