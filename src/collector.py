@@ -46,3 +46,14 @@ class RaceDataCollector:
         # 2-3. データ整形・表記ゆれ等の修正（normalizer）
         # 3. CSVとして保存
         pass
+        
+    def _determine_target_date(self, input_date: str) -> str:
+        """
+        取得する日付の決定
+        - 指定がある場合＞指定日を返す
+        - 指定がない場合＞nowの日付を返す
+        """
+        if input_date and input_date.strip():
+            return input_date.strip()
+        else:
+            datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).strftime("%Y%m%d")
