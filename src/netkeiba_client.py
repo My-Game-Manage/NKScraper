@@ -12,10 +12,11 @@ class NetKeibaClient:
         """
         初期化： Driverの初期化
         """
-        self.driver = self._setup_driver(headless)
-        
         # クラス名を名前としてロガーを作成
         self.logger = setup_logger("NetkeibaClient")
+        
+        # ドライバー初期化
+        self.driver = self._setup_driver(headless)        
 
     def quit(self):
         """
