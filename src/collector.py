@@ -14,6 +14,7 @@ from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
 from src.utils.date_utils import normalize_date_format, get_today_jst
 from src.utils.logger import setup_logger
+from src.utils.helpers import get_top_page_url
 
 class DataType(Enum):
     SHUTSUBA = "出馬表"
@@ -94,7 +95,16 @@ class RaceDataCollector:
         return filtered_kaisai_ids
 
     def _get_kaisai_ids(self, date, is_nar):
-        return ""
+        """
+        指定日の開催IDリスト（10桁）を取得
+        例: 2026470324 (2026年 47:名古屋 03回 24日目)
+        """
+        url = get_top_page_url(date, is_nar)
+        html = self.client.get_html(url)
+        
+        kaisai_ids = self.parser.extract_race_ids(html)
+        
+        return kaisai_ids
 
     def _get_filtered_kaisai_ids(self, kaisai_ids, is_nar: bool):
         """
