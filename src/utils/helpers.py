@@ -1,4 +1,4 @@
-from src.constants.master_data import JRA_MAX_COURSE_CODE
+from src.constants.master_data import JYO_NAME_MAP, JRA_MAX_COURSE_CODE, EXCLUDE_COURSES
 from src.constants.schema import NetkeibaDomain
 
 def is_nar_id(race_id: str) -> bool:
@@ -61,6 +61,29 @@ def get_top_page_url(target_date: str, is_nar: bool = True) -> str:
     """
     domain = get_netkeiba_domain_by_is_nar(is_nar)
     return f"https://{domain}.netkeiba.com/top/?kaisai_date={target_date}"
+
+def get_jyo_name(kaisai_id: str) -> str:
+    """10桁または12桁のIDから会場名を特定"""
+    if not kaisai_id or len(kaisai_id) < 6:
+        return "不明"
+            
+    code = kaisai_id[4:6]
+    # 定数から取得。なければ "不明" を返す
+    return JYO_NAME_MAP.get(code, "不明")
+    
+def filter_race_ids_exclude_course(kaisai_ids: list) -> list:
+    """
+    レースIDリストから、除外対象を取り除く
+    """
+    valid_ids_list = []
+    for k_id in kaisai_ids:
+        actual_course = get_jyo_name(k_id)
+        
+        if actual_course in EXCLUDE_COURSES:
+            print(f"スキップ中: {actual_course}({k_id}) は取得対象外です。")
+            continue
+        valid_ids_list.append(k_id)
+    return valid_ids_list
 
 def filter_race_ids_by_course(race_ids: list, target_course_codes: list) -> list:
     """
