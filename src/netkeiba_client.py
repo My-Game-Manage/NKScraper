@@ -26,29 +26,6 @@ class NetKeibaClient:
         if self.driver:
             self.driver.quit()
 
-    def fetch_kaisai_html(self, target_date: str, is_nar: bool) -> str:
-        """
-        指定日の開催TOPページのHTMLを取得
-        """
-        return ""
-
-    def fetch_kaisai_ids(self, target_date: str, is_nar: bool) -> list:
-        """
-        指定日の開催IDリスト（10桁）を取得
-        例: 2026470324 (2026年 47:名古屋 03回 24日目)
-        """
-        domain = "nar"#get_domain_is_nar(is_nar)
-        url = f"https://{domain}.netkeiba.com/top/race_list.html?kaisai_date={target_date}"
-        html = self.get_html(url)
-        
-        # 開催ID（10桁の数字）を抽出する正規表現
-        # 地方競馬URL例: kaisai_id=2026480324
-        pattern = r'kaisai_id=(\d{10})'
-        found_ids = re.findall(pattern, html)
-        
-        # 重複を除去してソートして返す
-        return sorted(list(set(found_ids)))
-
     def get_html(self, url: str, retry_count=3) -> str:
         """リトライ機能付きのページ取得"""
         for i in range(retry_count):
