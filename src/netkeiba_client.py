@@ -9,7 +9,7 @@ class NetKeibaClient:
     def __init__(self, headless=True):
         self.driver = self._setup_driver(headless)
 
-     def _setup_driver(self, headless):
+    def _setup_driver(self, headless):
         options = Options()
         if headless:
             options.add_argument('--headless=new')
