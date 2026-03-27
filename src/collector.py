@@ -88,10 +88,13 @@ class RaceDataCollector:
         filtered_kaisai_ids = []
         # 地方競馬、中央競馬、両方を回す
         for is_nar in [True, False]:
-            kaisai_ids = self.client.get_kaisai_ids(date, is_nar)
+            kaisai_ids = self._get_kaisai_ids(date, is_nar)
             if kaisai_ids:
                 filtered_kaisai_ids += self._get_filtered_kaisai_ids(kaisai_ids, is_nar)
         return filtered_kaisai_ids
+
+    def _get_kaisai_ids(self, date, is_nar):
+        return ""
 
     def _get_filtered_kaisai_ids(self, kaisai_ids, is_nar: bool):
         """
