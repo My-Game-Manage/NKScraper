@@ -13,3 +13,7 @@ JYO_NAME_MAP = {
 # 地方競馬(NAR)か中央競馬(JRA)かを判定する境界
 JRA_MAX_COURSE_CODE = 10
 
+# 除外する場所名
+EXCLUDE_COURSES = (
+    '帯広', '不明',
+}
