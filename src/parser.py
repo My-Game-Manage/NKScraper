@@ -73,8 +73,6 @@ class DataParser:
                 if r_info:
                     race_info_list.append(r_info)
                     horse_ids.append(r_info[RaceCol.HORSE_ID])
-            
-                if h_id: horse_ids.append(h_id)
 
             return race_info_list, horse_ids
         except Exception as e:
