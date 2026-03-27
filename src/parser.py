@@ -39,32 +39,86 @@ class DataParser:
         ページから必要な情報を取得する
         """
         try:
-            soup = BeautifulSoup(html, 'html.parser')
-            # 3. レース名の確認
-            # nar.netkeibaの場合、RaceName などのクラスが使われることが多い
-            race_name_tag = soup.find('div', class_='RaceName')
-            if race_name_tag:
-                print(f"【レース名】: {race_name_tag.get_text(strip=True)}")
-
-            # 4. 結果テーブルの構造確認
-            # 全着順が入っているテーブルを探す（IDやクラス名は時期により変動あり）
-            result_table = soup.find('table', id='All_Result_Table') or soup.find('table', class_='ResultTable01')
+            # レース基本情報
+            race_name_tag = soup.select_one(".RaceName")
+            race_name = race_name_tag.get_text(strip=True) if race_name_tag else ""
         
-            if result_table:
-                print("\n【テーブル構造の確認】")
-                # ヘッダー（項目名）の取得
-                headers = [th.get_text(strip=True) for th in result_table.find_all('th')]
-                print(f"項目一覧: {headers}")
+            race_data_tag = soup.select_one(".RaceData01")
+            race_data = race_data_tag.get_text(strip=True) if race_data_tag else ""
+        
+            # 距離と種別の抽出 (例: ダ1600m)
+            dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
+            condition = dist_match.group(1) if dist_match else ""
+            distance = dist_match.group(2) if dist_match else ""
+        
+            course_name = self.get_jyo_name(race_id)
+            race_num = int(race_id[-2:])
 
-                # データのサンプル（上位3件）を表示
-                rows = result_table.find_all('tr')[1:4] # 0番目はヘッダーなので1番目から
-                for i, row in enumerate(rows, 1):
-                    cols = [td.get_text(strip=True) for td in row.find_all('td')]
-                    print(f"{i}位データ例: {cols}")
-            else:
-                print("\n※ 結果テーブルが見つかりませんでした。クラス名が変更されている可能性があります。")
-            return None, None
+            race_info_list = []
+            horse_ids = []
+        
+            # 出馬表の行をループ
+            rows = soup.select("tr.HorseList")
+            for row in rows:
+                # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
+                h_tag = row.select_one(".HorseName a")
+                if not h_tag:
+                    continue
+            
+                # 枠番・馬番（部分一致セレクタを使用）
+                waku_tag = row.select_one("td[class*='Waku']")
+                waku = waku_tag.get_text(strip=True) if waku_tag else ""
+            
+                umaban_tag = row.select_one("td[class*='Umaban']")
+                umaban = umaban_tag.get_text(strip=True) if umaban_tag else ""
+            
+                # 馬名・ID
+                h_tag = row.select_one(".HorseName a")
+                h_name = h_tag.get_text(strip=True) if h_tag else ""
+                h_id = re.search(r'horse/(\d+)', h_tag['href']).group(1) if h_tag and 'href' in h_tag.attrs else ""
 
+                # 性齢：class="Age" を使用／中央はclass="Barei"を使用
+                age_td = row.select_one(".Age")
+                if not age_td:
+                    age_td = row.select_one(".Barei")
+                sex, age = self._split_sex_age(age_td.get_text(strip=True)) if age_td else (None, None)
+            
+                # 斤量：td:nth-of-type(6) を使用
+                kinryo_td = row.select_one("td:nth-of-type(6)")
+                kinryo = kinryo_td.get_text(strip=True) if kinryo_td else ""
+            
+                # 騎手・厩舎
+                jockey = row.select_one(".Jockey a").get_text(strip=True) if row.select_one(".Jockey a") else ""
+                trainer = row.select_one(".Trainer").get_text(strip=True) if row.select_one(".Trainer") else ""
+            
+                # 馬体重の分離
+                weight_tag = row.select_one(".Weight") # 独立したWeightクラス（馬体重用）
+                weight_raw = weight_tag.get_text(strip=True) if weight_tag else ""
+                weight, weight_diff = self._split_weight(weight_raw)
+
+                race_info_list.append({
+                    '開催': course_name,
+                    'レース番号': race_num,
+                    'レース名': race_name,
+                    '種別': condition,
+                    '距離': distance,
+                    '枠番': waku,
+                    '馬番': umaban,
+                    '馬名': h_name,
+                    '父馬': 'Unknown',
+                    '母馬': 'Unknown',
+                    '性別': sex,
+                    '年齢': age,
+                    '斤量': kinryo,
+                    '騎手': jockey,
+                    '厩舎': trainer,
+                    '馬体重': weight,
+                    '体重増減': weight_diff,
+                    '馬ID': h_id
+                })
+                if h_id: horse_ids.append(h_id)
+
+            return race_info_list, horse_ids
         except Exception as e:
             print(f"エラーが発生しました: {e}")
             return None, None
