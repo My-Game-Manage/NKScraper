@@ -52,14 +52,14 @@ class RaceDataCollector:
         # 3. 実行状態の管理（同じ馬を何度も取得しないためのキャッシュなど）
         self.processed_horse_ids = set()
 
-    def run(self, target_date=None, course_filter=None, race_filter=None, is_result: bool=False, only_race: bool=False):
+    def run(self, target_date=None, course_filter=None, race_num_filter=None, is_result: bool=False, only_race: bool=False):
         """
         メインの実行メソッド
         """
         self.logger.info("Collectorを実行開始します...")
         
         # 1. レースID一覧を取得（client）
-        target_race_ids = self._get_target_race_ids(target_date, course_filter, race_filter)
+        target_race_ids = self._get_target_race_ids(target_date, course_filter, race_num_filter)
         self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
 
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
