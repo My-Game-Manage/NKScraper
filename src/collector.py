@@ -35,6 +35,18 @@ class RaceDataCollector:
         # 3. 実行状態の管理（同じ馬を何度も取得しないためのキャッシュなど）
         self.processed_horse_ids = set()
 
+    def run(self, date, course, race_num, is_result: bool=False, only_race: bool=False):
+        """
+        メインの実行メソッド
+        """
+        # 1. レースID一覧を取得（client）
+        # 2. 各レースの処理
+        # 2-1. ソース取得（client）
+        # 2-2. 欲しい情報採取（）
+        # 2-3. データ整形・表記ゆれ等の修正（normalizer）
+        # 3. CSVとして保存
+        pass
+
     def fetch_and_save(self, target_date: str, course: str = None):
         """
         メインの実行メソッド（概要）
