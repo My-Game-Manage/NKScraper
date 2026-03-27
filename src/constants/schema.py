@@ -2,7 +2,13 @@ class NetkeibaDomain:
     # ドメイン定義
     NAR = 'nar'
     JRA = 'race'
-    
+
+class NetkeibaPageType:
+    # ページの分類
+    SHUTUBA = 'shutuba'
+    RESULT = 'result'
+    ODDS = 'odds'
+
 class RaceCol:
     # --- 英語名定義 (プログラムで使用) ---
     HORSE_ID = "horse_id"
