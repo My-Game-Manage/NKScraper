@@ -61,3 +61,53 @@ def get_top_page_url(target_date: str, is_nar: bool = True) -> str:
     """
     domain = get_netkeiba_domain_by_is_nar(is_nar)
     return f"https://{domain}.netkeiba.com/top/?kaisai_date={target_date}"
+
+def filter_race_ids_by_course(race_ids: list, target_course_codes: list) -> list:
+    """
+    レースIDリストの中から、指定した会場コードに合致するものだけを抽出する
+    
+    Args:
+        race_ids (list): IDのリスト
+        target_course_codes (list): ['44', '54'] のような場所コードのリスト
+    
+    Returns:
+        list: フィルタリングされたレースIDリスト
+    """
+    if not race_ids:
+        return []
+    
+    # 文字列として比較するために正規化 (54 -> "54")
+    target_codes = [str(c).zfill(2) for c in target_course_codes]
+    
+    # IDの5-6文字目が場所コード
+    filtered = [
+        rid for rid in race_ids 
+        if str(rid)[4:6] in target_codes
+    ]
+    
+    return sorted(filtered)
+
+def filter_race_ids_by_number(race_ids: list, target_nums: list) -> list:
+    """
+    レースIDリストの中から、指定したレース番号に合致するものだけを抽出する
+    
+    Args:
+        race_ids (list): ['202654032801', '202654032802', ...] のようなIDリスト
+        target_nums (list): [1, 11] のような取得したいレース番号のリスト
+    
+    Returns:
+        list: フィルタリングされたレースIDリスト
+    """
+    if not race_ids:
+        return []
+    
+    # 比較用にターゲット番号を文字列の2桁ゼロ埋めに変換しておく (1 -> "01")
+    target_str_list = [str(n).zfill(2) for n in target_nums]
+    
+    # 末尾2桁がターゲットに含まれるものだけを抽出
+    filtered = [
+        rid for rid in race_ids 
+        if str(rid)[-2:] in target_str_list
+    ]
+    
+    return sorted(filtered)
