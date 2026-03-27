@@ -14,6 +14,6 @@ JYO_NAME_MAP = {
 JRA_MAX_COURSE_CODE = 10
 
 # 除外する場所名
-EXCLUDE_COURSES = (
+EXCLUDE_COURSES = {
     '帯広', '不明',
 }
