@@ -42,6 +42,8 @@ class DataParser:
         ページから必要な情報を取得する
         """
         try:
+            soup = BeautifulSoup(html, 'html.parser')
+            
             # レース基本情報
             race_name_tag = soup.select_one(".RaceName")
             race_name = race_name_tag.get_text(strip=True) if race_name_tag else ""
