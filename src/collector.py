@@ -14,7 +14,7 @@ from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
 from src.utils.date_utils import normalize_date_format, get_today_jst
 from src.utils.logger import setup_logger
-from src.utils.helpers import get_top_page_url
+from src.utils.helpers import get_top_page_url, filter_race_ids_by_course, filter_race_ids_by_number
 
 class DataType(Enum):
     SHUTSUBA = "出馬表"
@@ -49,14 +49,14 @@ class RaceDataCollector:
         # 3. 実行状態の管理（同じ馬を何度も取得しないためのキャッシュなど）
         self.processed_horse_ids = set()
 
-    def run(self, date=None, course=None, race_num=None, is_result: bool=False, only_race: bool=False):
+    def run(self, date=None, course_codes=None, race_nums=None, is_result: bool=False, only_race: bool=False):
         """
         メインの実行メソッド
         """
         self.logger.info("Collectorを実行開始します...")
         
         # 1. レースID一覧を取得（client）
-        target_race_ids = self._get_target_race_ids(date, course, race_num)
+        target_race_ids = self._get_target_race_ids(date, course_codes, race_nums)
         self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
 
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
@@ -81,7 +81,7 @@ class RaceDataCollector:
             self.logger.info(f"race_result_listを保存しました")
         print("終了しました")
 
-    def _get_target_race_ids(self, date, course, race_num) -> list:
+    def _get_target_race_ids(self, date, course_codes, race_nums) -> list:
         """
         目的のレースIDリストを返す
         """
@@ -89,12 +89,15 @@ class RaceDataCollector:
         filtered_kaisai_ids = []
         # 地方競馬、中央競馬、両方を回す
         for is_nar in [True, False]:
-            kaisai_ids = self._get_kaisai_ids(date, is_nar)
-            if kaisai_ids:
-                filtered_kaisai_ids += self._get_filtered_kaisai_ids(kaisai_ids, is_nar)
-        return filtered_kaisai_ids
+            kaisai_ids += self._get_kaisai_ids(date, is_nar)
+        # 指定がある場合はフィルタリングする
+        if kaisai_ids and (course_codes or race_nums):
+            filtered_kaisai_ids = self._get_filtered_kaisai_ids(kaisai_ids, course_codes, race_nums)
+            return filtered_kaisai_ids
+        else:
+            return kaisai_ids
 
-    def _get_kaisai_ids(self, date, is_nar):
+    def _get_kaisai_ids(self, date: str, is_nar: bool):
         """
         指定日の開催IDリスト（10桁）を取得
         例: 2026470324 (2026年 47:名古屋 03回 24日目)
@@ -107,11 +110,17 @@ class RaceDataCollector:
         self.logger.info(f"kaisai_ids: {len(kaisai_ids)}件取得しました")
         return kaisai_ids
 
-    def _get_filtered_kaisai_ids(self, kaisai_ids, is_nar: bool):
+    def _get_filtered_kaisai_ids(self, kaisai_ids: list, course_codes: list, race_nums: list) -> list:
         """
         フィルタリングしたレースIDを返す
         """
-        return []
+        filtered_ids = kaisai_ids
+        # コースでフィルタリング
+        if course_codes:
+            filtered_ids = filter_race_ids_by_course(filtered_ids, course_codes)
+        if race_nums:
+            filtered_ids = filter_race_ids_by_number(filtered_ids, race_nums)
+        return filtered_ids
 
     def _get_race_infos_from_ids(self, race_ids, only_race: bool):
         """
