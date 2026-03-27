@@ -93,6 +93,7 @@ class RaceDataCollector:
         # 指定がある場合はフィルタリングする
         if kaisai_ids and (course_codes or race_nums):
             filtered_kaisai_ids = self._get_filtered_kaisai_ids(kaisai_ids, course_codes, race_nums)
+            self.logger.info(f"kaisai_ids {len(kaisai_ids)}件から filtered_kaisai_ids {len(filtered_kaisai_ids)}にフィルタリングしました")
             return filtered_kaisai_ids
         else:
             return kaisai_ids
