@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
-def to_date_id(date_val) -> str:
+def normalize_date_format(date_val) -> str:
     """
     あらゆる日付形式を 8桁の文字列ID 'YYYYMMDD' に変換する
     """
@@ -21,3 +21,11 @@ def to_date_id(date_val) -> str:
     normalized = "".join(filter(str.isdigit, date_str))
     
     return normalized
+
+def get_today_jst() -> str:
+    """
+    現在の日本時間を 'YYYYMMDD' 形式で返す
+    """
+    # UTC+9時間（日本時間）のタイムゾーンを定義
+    # 現在時刻をJSTで取得
+    return datetime.now(timezone(timedelta(hours=9), 'JST')).strftime('%Y%m%d')
