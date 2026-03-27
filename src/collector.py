@@ -13,6 +13,7 @@ from src.netkeiba_client import NetKeibaClient
 from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
 from src.utils.date_utils import normalize_date_format, get_today_jst
+from src.utils.logger import setup_logger
 
 class DataType(Enum):
     SHUTSUBA = "出馬表"
@@ -26,6 +27,11 @@ class RaceDataCollector:
         """
         初期化: 必要なコンポーネントのインスタンス化とディレクトリ準備
         """
+        # クラス名を名前としてロガーを作成
+        self.logger = setup_logger("Collector")
+
+        self.logger.info("Collectorを初期化しています...")
+        
         # 1. 道具（コンポーネント）の準備
         self.client = NetKeibaClient(headless=headless)
         self.parser = DataParser()
