@@ -30,7 +30,7 @@ class NetKeibaClient:
         指定日の開催IDリスト（10桁）を取得
         例: 2026470324 (2026年 47:名古屋 03回 24日目)
         """
-        domain = 'nar' if is_nar else 'race'
+        domain = "nar"#get_domain_is_nar(is_nar)
         url = f"https://{domain}.netkeiba.com/top/race_list.html?kaisai_date={target_date}"
         html = self.get_html(url)
         
@@ -38,10 +38,22 @@ class NetKeibaClient:
         # 地方競馬URL例: kaisai_id=2026480324
         pattern = r'kaisai_id=(\d{10})'
         found_ids = re.findall(pattern, html)
-        print(f"found_ids: {found_ids}")
         
         # 重複を除去してソートして返す
         return sorted(list(set(found_ids)))
+
+    def get_html(self, url: str, retry_count=3) -> str:
+        """リトライ機能付きのページ取得"""
+        for i in range(retry_count):
+            try:
+                self.driver.get(url)
+                time.sleep(1) # 安定させるための待機
+                return self.driver.page_source
+            except WebDriverException as e:
+                if i < retry_count - 1:
+                    time.sleep(3)
+                    continue
+        return ""
 
     def _setup_driver(self, headless):
         """
