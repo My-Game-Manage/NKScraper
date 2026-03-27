@@ -85,7 +85,7 @@ class RaceDataCollector:
         ids_list = []
         return ids_list
 
-    def _get_race_infos_from_ids(self, race_ids, is_result: bool, only_race: bool):
+    def _get_race_infos_from_ids(self, race_ids, only_race: bool):
         """
         目的の出馬表、各馬の過去データの取得
         """
