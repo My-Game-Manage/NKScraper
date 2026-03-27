@@ -1,4 +1,5 @@
 from src.constants.master_data import JRA_MAX_COURSE_CODE
+from src.constants.schema import NetkeibaDomain
 
 def is_nar_id(race_id: str) -> bool:
     """
@@ -17,7 +18,7 @@ def get_netkeiba_domain(race_id: str) -> str:
     レースIDから適切なドメイン (race または nar) を返す
     """
     if not race_id or len(str(race_id)) < 6:
-        return DOMAIN.JRA.value # "race" # デフォルト
+        return NetkeibaDomain.JRA # "race" # デフォルト
     
     try:
         # IDの5-6文字目が場所コード
@@ -25,17 +26,17 @@ def get_netkeiba_domain(race_id: str) -> str:
         
         # 10以下なら中央(race)、11以上なら地方(nar)
         if course_code <= JRA_MAX_COURSE_CODE:
-            return DOMAIN.JRA.value
+            return NetkeibaDomain.JRA
         else:
-            return DOMAIN.NAR.value
+            return NetkeibaDomain.NAR
     except (ValueError, IndexError):
-        return DOMAIN.JRA.value
+        return NetkeibaDomain.JRA
 
 def get_netkeiba_domain_by_is_nar(is_nar: bool) -> str:
     """
     is_narからドメイン取得
     """
-    return DOMAIN.NAR.value if is_nar else DOMAIN.JRA.value
+    return NetkeibaDomain.NAR if is_nar else NetkeibaDomain.JRA
     
 def get_race_url(race_id: str, page_type: str = "result") -> str:
     """
