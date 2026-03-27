@@ -2,18 +2,22 @@
 collector.py の概要
 このクラスの主な責務は以下の3つです。
 
-依存クラスの集約: NetKeibaClient（通信）、DataParser（解析）、DataNormalizer（修正）を束ねる。
-
-実行フローの制御: 「ID取得 → HTML取得 → パース → 正規化 → 保存」という一連の流れを実行する。
-
-環境管理: 保存先ディレクトリの作成や、重複データのチェック（キャッシュ管理）を行う。
+1. 依存クラスの集約: NetKeibaClient（通信）、DataParser（解析）、DataNormalizer（修正）を束ねる。
+2. 実行フローの制御: 「ID取得 → HTML取得 → パース → 正規化 → 保存」という一連の流れを実行する。
+3. 環境管理: 保存先ディレクトリの作成や、重複データのチェック（キャッシュ管理）を行う。
 """
 
 import os
+from enum import Enum
 from src.netkeiba_client import NetKeibaClient
 from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
 from src.utils.date_utils import normalize_date_format, get_today_jst
+
+class DataType(Enum):
+    SHUTSUBA = "出馬表"
+    HISTORY = "過去履歴"
+    RESULT = "レース結果"
 
 DEFAULT_BASE_DIR = 'data'
 
@@ -41,11 +45,45 @@ class RaceDataCollector:
         メインの実行メソッド
         """
         # 1. レースID一覧を取得（client）
-        # 2. 各レースの処理
-        # 2-1. ソース取得（client）
-        # 2-2. 欲しい情報採取（）
-        # 2-3. データ整形・表記ゆれ等の修正（normalizer）
+        target_race_ids = self._get_target_race_ids(date, course, race_num)
+        # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
+        race_info_list, horse_info_list, race_result_list = [], [], []
+        if is_result:
+            race_result_list = self._get_race_result_from_ids(target_race_ids)
+        else:
+            race_info_list, horse_info_list = self._get_race_infos_from_ids(target_race_ids, only_race)
         # 3. CSVとして保存
+        if race_info_list:
+            self._save_to_csv(race_info_list, DataType.SHUTSUBA)
+        if horse_info_list:
+            self._save_to_csv(horse_info_list, DataType.HISTORY)
+        if race_result_list:
+            self._save_to_csv(race_result_list, DataType.RESULT)
+        print("終了しました")
+
+    def _get_target_race_ids(self, date, course, race_num) -> list:
+        """
+        目的のレースIDリストを返す
+        """
+        ids_list = []
+        return ids_list
+
+    def _get_race_infos_from_ids(self, race_ids, is_result: bool, only_race: bool):
+        """
+        目的の出馬表、各馬の過去データの取得
+        """
+        return [], []
+
+    def _get_race_result_from_ids(self, race_ids):
+        """
+        目的のレース結果の取得
+        """
+        return []
+
+    def _save_to_csv(self, data_list: list, data_type: DataType):
+        """
+        データ形式をDataFrameにしてCSVで保存する
+        """
         pass
         
     def _determine_target_date(self, input_date: str) -> str:
