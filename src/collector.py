@@ -13,6 +13,7 @@ import os
 from src.netkeiba_client import NetKeibaClient
 from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
+from src.utils.date_utils import normalize_date_format, get_today_jst
 
 DEFAULT_BASE_DIR = 'data'
 
@@ -53,7 +54,4 @@ class RaceDataCollector:
         - 指定がある場合＞指定日を返す
         - 指定がない場合＞nowの日付を返す
         """
-        if input_date and input_date.strip():
-            return input_date.strip()
-        else:
-            datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).strftime("%Y%m%d")
+        return normalize_date_format(input_date if input_date else get_today_jst())
