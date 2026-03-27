@@ -1,5 +1,5 @@
 from src.constants.master_data import JYO_NAME_MAP, JRA_MAX_COURSE_CODE, EXCLUDE_COURSES
-from src.constants.schema import NetkeibaDomain
+from src.constants.schema import NetkeibaDomain, NetkeibaPageType
 
 def is_nar_id(race_id: str) -> bool:
     """
@@ -38,7 +38,7 @@ def get_netkeiba_domain_by_is_nar(is_nar: bool) -> str:
     """
     return NetkeibaDomain.NAR if is_nar else NetkeibaDomain.JRA
     
-def get_race_url(race_id: str, page_type: str = "result") -> str:
+def get_race_url(race_id: str, page_type: NetkeibaPageType=NetkeibaPageType.SHUTUBA) -> str:
     """
     レースIDとページ種別からフルURLを生成する
     page_type: 'result', 'shutuba', 'odds' など
@@ -47,9 +47,9 @@ def get_race_url(race_id: str, page_type: str = "result") -> str:
     
     # ページ種別ごとのパス（netkeibaの仕様に合わせる）
     path_map = {
-        "result": "race/result.html",
-        "shutuba": "race/shutuba.html",
-        "odds": "race/odds.html"
+        NetkeibaPageType.RESULT: "race/result.html",
+        NetkeibaPageType.SHUTUBA: "race/shutuba.html",
+        NetkeibaPageType.ODDS: "race/odds.html"
     }
     path = path_map.get(page_type, "race/result.html")
     
