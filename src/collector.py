@@ -20,7 +20,7 @@ from src.utils.helpers import (
 )
 
 class DataType(Enum):
-    SHUTSUBA = "出馬表"
+    SHUTUBA = "出馬表"
     HISTORY = "過去履歴"
     RESULT = "レース結果"
 
@@ -74,7 +74,7 @@ class RaceDataCollector:
             
         # 3. CSVとして保存
         if race_info_list:
-            self._save_to_csv(race_info_list, DataType.SHUTSUBA)
+            self._save_to_csv(race_info_list, DataType.SHUTUBA)
             self.logger.info(f"race_info_listを保存しました")
         if horse_info_list:
             self._save_to_csv(horse_info_list, DataType.HISTORY)
