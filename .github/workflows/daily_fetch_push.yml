@@ -1,0 +1,43 @@
+name: Daily Data Fetch and Push
+
+on:
+  #schedule:
+  #  - cron: '0 21 * * *' # 日本時間 朝6時 (UTC 21:00)
+  workflow_dispatch:      # 手動実行も可能にする
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo A (Source)
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Scraper
+        run: python main.py --date 20260325 # 例
+
+      - name: Push to External Repo B
+        env:
+          # Secretsに保存したトークンを使用
+          API_TOKEN: ${{ secrets.EXTERNAL_REPO_TOKEN }}
+        run: |
+          # 1. 転送先リポジトリをクローン
+          git clone https://x-access-token:${API_TOKEN}@github.com/あなたのユーザー名/repo-b.git destination
+          
+          # 2. 生成されたCSVを転送先へコピー
+          cp data/raw/*.csv destination/data/
+          
+          # 3. 転送先リポジトリに移動してPush
+          cd destination
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Add daily horse data $(date +%Y-%m-%d)"
+          git push
