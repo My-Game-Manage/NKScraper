@@ -14,8 +14,10 @@ from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
 from src.utils.date_utils import normalize_date_format, get_today_jst
 from src.utils.logger import setup_logger
-from src.utils.helpers import get_top_page_url, get_jyo_name,
-                        filter_race_ids_exclude_course, filter_race_ids_by_course, filter_race_ids_by_number
+from src.utils.helpers import (
+    get_top_page_url, get_jyo_name,
+    filter_race_ids_exclude_course, filter_race_ids_by_course, filter_race_ids_by_number
+)
 
 class DataType(Enum):
     SHUTSUBA = "出馬表"
