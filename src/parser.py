@@ -72,7 +72,7 @@ class DataParser:
                 r_info = self._get_entryhorse_info_from_row(row, race_name, condition, distance, course_name, race_num)
                 if r_info:
                     race_info_list.append(r_info)
-                    horse_ids.append(r_info['馬ID'])
+                    horse_ids.append(r_info[RaceCol.HORSE_ID])
             
                 if h_id: horse_ids.append(h_id)
 
