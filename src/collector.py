@@ -104,6 +104,7 @@ class RaceDataCollector:
         
         kaisai_ids = self.parser.extract_race_ids(html)
         
+        self.logger.info(f"kaisai_ids: {len(kaisai_ids)}件取得しました")
         return kaisai_ids
 
     def _get_filtered_kaisai_ids(self, kaisai_ids, is_nar: bool):
