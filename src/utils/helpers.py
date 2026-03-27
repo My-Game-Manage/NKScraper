@@ -1,10 +1,5 @@
 from src.constants.master_data import JRA_MAX_COURSE_CODE
 
-DOMAIN = {
-    NAR: 'nar',
-    JRA: 'race',
-}
-
 def is_nar_id(race_id: str) -> bool:
     """
     IDから地方競馬か中央競馬か判定する
