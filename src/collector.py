@@ -139,6 +139,8 @@ class RaceDataCollector:
         """
         race_infos = []
         horse_ids = []
+        for r_id in race_ids:
+            r_info, h_ids = self._collect_race_at(r_id)
         return race_infos, horse_ids
 
     def _get_horse_infos_from_ids(self, horse_ids: list):
@@ -158,10 +160,13 @@ class RaceDataCollector:
                 result_list.append(result)
         return result_list
 
-    def _collect_race_at():
+    def _collect_race_at(self, race_id):
         """
         特定の1レースに関する情報を取得する
         """
+        url = get_race_url(race_id)
+        html = self.client.get_html(url)
+        race_info, horse_ids = self.parser.parse_race_page(html, race_id)
         return []
 
     def _save_to_csv(self, data_list: list, data_type: DataType):
