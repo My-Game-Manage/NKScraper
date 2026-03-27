@@ -22,11 +22,13 @@ class DataType(Enum):
 
 DEFAULT_BASE_DIR = 'data'
 
+
 class RaceDataCollector:
     def __init__(self, headless: bool = True, base_dir: str = DEFAULT_BASE_DIR):
         """
         初期化: 必要なコンポーネントのインスタンス化とディレクトリ準備
         """
+        _CLASSNAME = "Collector"
         # クラス名を名前としてロガーを作成
         self.logger = setup_logger("Collector")
 
