@@ -9,6 +9,7 @@ collector.py の概要
 
 import os
 from enum import Enum
+from src.constants.schema import NetkeibaPageType
 from src.netkeiba_client import NetKeibaClient
 from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
@@ -16,7 +17,8 @@ from src.utils.date_utils import normalize_date_format, get_today_jst
 from src.utils.logger import setup_logger
 from src.utils.helpers import (
     get_top_page_url, get_jyo_name,
-    filter_race_ids_exclude_course, filter_race_ids_by_course, filter_race_ids_by_number
+    filter_race_ids_exclude_course, filter_race_ids_by_course, filter_race_ids_by_number,
+    get_race_url
 )
 
 class DataType(Enum):
@@ -63,14 +65,18 @@ class RaceDataCollector:
         self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
 
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
-        race_info_list, horse_info_list, race_result_list = [], [], []
+        race_info_list, horse_ids, horse_info_list, race_result_list = [], [], [], []
         if is_result:
             race_result_list = self._get_race_result_from_ids(target_race_ids)
             self.logger.info(f"race_result_list: {len(race_result_list)}件取得しました")
         else:
-            race_info_list, horse_info_list = self._get_race_infos_from_ids(target_race_ids, only_race)
+            race_info_list, horse_ids = self._get_race_infos_from_ids(target_race_ids, only_race)
             self.logger.info(f"race_info_list: {len(race_info_list)}件取得しました")
-            self.logger.info(f"horse_info_list: {len(horse_info_list)}件取得しました")
+            self.logger.info(f"horse_ids: {len(horse_ids)}件取得しました")
+            if horse_ids and not only_race:
+                # 馬レース履歴はまとめて取得
+                horse_info_list = self._get_horse_infos_from_ids(horse_ids)
+                self.logger.info(f"horse_info_list: {len(horse_info_list)}件取得しました")
             
         # 3. CSVとして保存
         if race_info_list:
@@ -129,13 +135,32 @@ class RaceDataCollector:
 
     def _get_race_infos_from_ids(self, race_ids, only_race: bool):
         """
-        目的の出馬表、各馬の過去データの取得
+        目的の出馬表、各馬のIDの取得
         """
-        return [], []
+        race_infos = []
+        horse_ids = []
+        return race_infos, horse_ids
+
+    def _get_horse_infos_from_ids(self, horse_ids: list):
+        """
+        目的の馬の過去データの取得
+        """
+        return []
 
     def _get_race_result_from_ids(self, race_ids):
         """
         目的のレース結果の取得
+        """
+        result_list = []
+        for r_id in race_ids:
+            result = []
+            if result:
+                result_list.append(result)
+        return result_list
+
+    def _collect_race_at():
+        """
+        特定の1レースに関する情報を取得する
         """
         return []
 
