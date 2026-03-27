@@ -1,14 +1,16 @@
 # html parser
 
+from src.constants.master_data import JYO_NAME_MAP
+
 class DataParser:
     def __init__(self):
-        # 地方競馬・中央競馬共通の場所コードマップ
-        self.jyo_map = {
-            '01': '札幌', '02': '函館', '03': '福島', '04': '新潟',
-            '05': '東京', '06': '中山', '07': '中京', '08': '京都',
-            '09': '阪神', '10': '小倉', '30': '門別', '35': '盛岡',
-            '36': '水沢', '42': '浦和', '43': '船橋', '44': '大井',
-            '45': '川崎', '46': '金沢', '47': '笠松', '48': '名古屋',
-            '50': '園田', '51': '姫路', '54': '高知', '55': '佐賀',
-            '65': '帯広',
-        }
+        self._any = None
+        
+    def get_jyo_name(self, kaisai_id: str) -> str:
+        """10桁または12桁のIDから会場名を特定"""
+        if not kaisai_id or len(kaisai_id) < 6:
+            return "不明"
+            
+        code = kaisai_id[4:6]
+        # 定数から取得。なければ "不明" を返す
+        return JYO_NAME_MAP.get(code, "不明")
