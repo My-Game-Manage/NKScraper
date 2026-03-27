@@ -25,6 +25,12 @@ class NetKeibaClient:
         if self.driver:
             self.driver.quit()
 
+    def fetch_kaisai_html(self, target_date: str, is_nar: bool) -> str:
+        """
+        指定日の開催TOPページのHTMLを取得
+        """
+        return ""
+
     def fetch_kaisai_ids(self, target_date: str, is_nar: bool) -> list:
         """
         指定日の開催IDリスト（10桁）を取得
