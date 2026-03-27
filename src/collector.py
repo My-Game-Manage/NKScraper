@@ -50,21 +50,32 @@ class RaceDataCollector:
         """
         メインの実行メソッド
         """
+        self.logger.info("Collectorを実行開始します...")
+        
         # 1. レースID一覧を取得（client）
         target_race_ids = self._get_target_race_ids(date, course, race_num)
+        self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
+
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
         race_info_list, horse_info_list, race_result_list = [], [], []
         if is_result:
             race_result_list = self._get_race_result_from_ids(target_race_ids)
+            self.logger.info(f"race_result_list: {len(race_result_list)}件取得しました")
         else:
             race_info_list, horse_info_list = self._get_race_infos_from_ids(target_race_ids, only_race)
+            self.logger.info(f"race_info_list: {len(race_info_list)}件取得しました")
+            self.logger.info(f"horse_info_list: {len(horse_info_list)}件取得しました")
+            
         # 3. CSVとして保存
         if race_info_list:
             self._save_to_csv(race_info_list, DataType.SHUTSUBA)
+            self.logger.info(f"race_info_listを保存しました")
         if horse_info_list:
             self._save_to_csv(horse_info_list, DataType.HISTORY)
+            self.logger.info(f"horse_info_listを保存しました")
         if race_result_list:
             self._save_to_csv(race_result_list, DataType.RESULT)
+            self.logger.info(f"race_result_listを保存しました")
         print("終了しました")
 
     def _get_target_race_ids(self, date, course, race_num) -> list:
