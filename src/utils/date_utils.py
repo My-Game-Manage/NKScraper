@@ -30,7 +30,7 @@ def get_today_jst() -> str:
     # 現在時刻をJSTで取得
     return datetime.now(timezone(timedelta(hours=9), 'JST')).strftime('%Y%m%d')
 
-def time_to_seconds(self, time_str):
+def time_to_seconds(time_str):
     """'1:25.2' -> 85.2, '59.9' -> 59.9 への変換"""
     if pd.isna(time_str) or not isinstance(time_str, str) or time_str == "**":
         return None
