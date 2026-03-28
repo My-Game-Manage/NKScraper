@@ -11,6 +11,23 @@ from src.constants.schema import RaceCol
 from src.utils.helpers import get_jyo_name
 from src.normalizer import DataNormalizer
 
+SELECTOR_TAG = {
+    RaceCol.RACE_DATA: ".RaceData01",
+    RaceCol.RACE_NAME: ".RaceName",
+    RaceCol.BRANCKET_NUM.: "td[class*='Waku']",
+    RaceCol.HORSE_NUM: "td[class*='Umaban']",
+    RaceCol.WEIGHT_CARRIED: "td:nth-of-type(6)",
+    RaceCol.JOCKEY: ".Jockey a",
+    RaceCol.STABLE: ".Trainer",
+    RaceCol.HORSE_NAME: ".HorseName a",
+    RaceCol.AGE: ".Age",
+    RaceCol.HORSE_WEIGHT: ".Weight",
+}
+
+SELECTOR_TAG_NAR = {
+    RaceCol.AGE: ".Barei",
+}
+
 class DataParser:
     """
     データを適切な形で取得する
@@ -56,14 +73,14 @@ class DataParser:
         return elm_tag.get_text(strip=True) if elm_tag else ""
 
     def _get_race_name(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, ".RaceName")
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_NAME])
 
     def _get_race_num(self, race_id: str) -> str:
         return int(race_id[-2:])
 
     def _get_cond_and_dist(self, soup: BeautifulSoup) -> list:
         # レース基本情報
-        race_data = self._get_elm_by_selector(soup, ".RaceData01")
+        race_data = self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_DATA])
         
         # 距離と種別の抽出 (例: ダ1600m)
         dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
@@ -72,34 +89,34 @@ class DataParser:
         return condition, distance
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, "td[class*='Waku']")
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
 
     def _get_horse_umaban(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, "td[class*='Umaban']")
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.HORSE_NUM])
         
     def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, "td:nth-of-type(6)")
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.WEIGHT_CARRIED])
 
     def _get_horse_jockey(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, ".Jockey a")
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.JOCKEY])
 
     def _get_horse_trainer(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, ".Trainer")
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.STABLE])
 
     def _get_horse_name_and_horse_id(self, soup: BeautifulSoup) -> list:
-        h_tag = soup.select_one(".HorseName a")
+        h_tag = soup.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
         h_name = h_tag.get_text(strip=True) if h_tag else ""
         h_id = re.search(r'horse/(\d+)', h_tag['href']).group(1) if h_tag and 'href' in h_tag.attrs else ""
         return h_name, h_id
         
     def _get_horse_sex_and_age(self, soup: BeautifulSoup) -> list:
-        age_td = soup.select_one(".Age")
+        age_td = soup.select_one(SELECTOR_TAG[RaceCol.AGE])
         if not age_td:
-            age_td = soup.select_one(".Barei")
+            age_td = soup.select_one(SELECTOR_TAG_NAR[RaceCol.AGE])
         return self._split_sex_age(age_td.get_text(strip=True)) if age_td else (None, None)
         
     def _get_horse_weight_and_diff(self, soup: BeautifulSoup) -> list:
-        weight_tag = soup.select_one(".Weight") # 独立したWeightクラス（馬体重用）
+        weight_tag = soup.select_one(SELECTOR_TAG[RaceCol.HORSE_WEIGHT]) # 独立したWeightクラス（馬体重用）
         weight_raw = weight_tag.get_text(strip=True) if weight_tag else ""
         return self._split_weight(weight_raw)
 
@@ -130,7 +147,7 @@ class DataParser:
             rows = soup.select("tr.HorseList")
             for row in rows:
                 # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
-                h_tag = row.select_one(".HorseName a")
+                h_tag = row.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
                 if not h_tag:
                     continue
                 row_info = self._get_entryhorse_info_from_row(row)
