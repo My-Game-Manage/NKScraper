@@ -166,7 +166,7 @@ class RaceDataCollector:
         """
         目的の馬の過去データの取得
         """
-        history_dfs = []
+        history_dfs = pd.DataFrame()
         sire_names_list = []
         for h_id in horse_ids:
             if h_id not in self.processed_horse_ids:
