@@ -51,6 +51,11 @@ class DataParser:
         # 2. 重複を除去し、昇順に並べ替えて返す
         return sorted(list(set(race_ids)))
 
+    def _get_race_name(self, soup: BeautifulSoup) -> str:
+        race_name_tag = soup.select_one(".RaceName")
+        race_name = race_name_tag.get_text(strip=True) if race_name_tag else ""
+        return race_name
+        
     def parse_race_page(self, html, race_id):
         """
         ページから必要な情報を取得する
@@ -60,8 +65,9 @@ class DataParser:
             soup = BeautifulSoup(html, 'html.parser')
             
             # レース基本情報
-            race_name_tag = soup.select_one(".RaceName")
-            race_name = race_name_tag.get_text(strip=True) if race_name_tag else ""
+            #race_name_tag = soup.select_one(".RaceName")
+            #race_name = race_name_tag.get_text(strip=True) if race_name_tag else ""
+            race_name = self._get_race_name(soup)
         
             race_data_tag = soup.select_one(".RaceData01")
             race_data = race_data_tag.get_text(strip=True) if race_data_tag else ""
