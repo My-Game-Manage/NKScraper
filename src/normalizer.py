@@ -40,6 +40,7 @@ class DataNormalizer:
 
         # 3. カラム名の置換を実行
         df = df.rename(columns=mapping)
+        print(f"normalize rename df: {df}")
 
         # 4. タイムを秒換算に書き換え
         df = DataNormalizer.convert_time_to_seconds(df)
