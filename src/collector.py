@@ -72,7 +72,7 @@ class RaceDataCollector:
         self.logger.info("Collectorを実行開始します...")
         
         # 1. レースID一覧を取得（client）
-        det_target_date = self.determine_target_date(target_date)
+        det_target_date = self._determine_target_date(target_date)
         target_race_ids = self._get_target_race_ids(det_target_date, course_filter, race_num_filter)
         self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
 
