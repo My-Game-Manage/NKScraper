@@ -43,7 +43,6 @@ class DataNormalizer:
 
         # 4. タイムを秒換算に書き換え
         df = DataNormalizer.convert_time_to_seconds(df)
-        print(f"normalize rename > time_to_sec df: {df}")
 
         # 5. 変換後の英語名で、推奨される列順序を定義
         # (RaceCol の定数を使うことで、タイポを防ぎます)
