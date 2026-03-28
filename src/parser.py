@@ -50,7 +50,7 @@ class DataParser:
         """
         ページから必要な情報を取得する
         """
-        self.logger.info(f"into parse_race_page: start processing ...")
+        self.logger.info(f"race-id {race_id} into parse_race_page: start processing ...")
         try:
             soup = BeautifulSoup(html, 'html.parser')
             
@@ -94,7 +94,7 @@ class DataParser:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
         """
-        self.logger.info(f"get_entryhorse_info_from_row: start processing ...")
+        self.logger.debug(f"get_entryhorse_info_from_row: start processing ...")
         # 枠番・馬番（部分一致セレクタを使用）
         waku_tag = row.select_one("td[class*='Waku']")
         waku = waku_tag.get_text(strip=True) if waku_tag else ""
