@@ -71,6 +71,9 @@ class DataParser:
         distance = dist_match.group(2) if dist_match else ""
         return condition, distance
 
+    def _get_horse_waku(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, "td[class*='Waku']")
+
         
     def parse_race_page(self, html, race_id):
         """
@@ -198,8 +201,7 @@ class DataParser:
         """
         self.logger.debug(f"get_entryhorse_info_from_row: start processing ...")
         # 枠番・馬番（部分一致セレクタを使用）
-        waku_tag = row.select_one("td[class*='Waku']")
-        waku = waku_tag.get_text(strip=True) if waku_tag else ""
+        waku_tag = self._get_horse_waku(row)
             
         umaban_tag = row.select_one("td[class*='Umaban']")
         umaban = umaban_tag.get_text(strip=True) if umaban_tag else ""
