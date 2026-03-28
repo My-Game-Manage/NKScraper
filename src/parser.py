@@ -163,7 +163,7 @@ class DataParser:
             # 存在するカラムのみで再構成
             final_cols = [c for c in ordered_cols if c in res_df.columns]
             res_df = res_df[final_cols]
-            self.logger.info(f"res_df: {res_df}")
+            self.logger.debug(f"res_df: {res_df}")
 
             # カラムの正規化
             valid_df = self.normalizer.normalize_columns(res_df)
