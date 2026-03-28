@@ -94,6 +94,7 @@ class DataParser:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
         """
+        self.logger.info(f"get_entryhorse_info_from_row: start processing ...")
         # 枠番・馬番（部分一致セレクタを使用）
         waku_tag = row.select_one("td[class*='Waku']")
         waku = waku_tag.get_text(strip=True) if waku_tag else ""
