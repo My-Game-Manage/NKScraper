@@ -77,8 +77,7 @@ class RaceDataCollector:
         self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
 
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
-        race_info_list, horse_info_dfs, horse_ids, race_result_list = [], [], [], []
-        horse_info_dfs = pd.DataFrame()
+        race_info_list, horse_info_list, horse_ids, race_result_list = [], [], [], []
         if is_result:
             race_result_list = self._get_race_result_from_ids(target_race_ids)
             self.logger.info(f"race_result_list: {len(race_result_list)}件取得しました")
@@ -88,9 +87,8 @@ class RaceDataCollector:
             self.logger.info(f"horse_ids: {len(horse_ids)}件取得しました")
             if horse_ids and not only_race:
                 # 馬レース履歴はまとめて取得
-                horse_info_dfs, sire_names_list = self._get_horse_infos_from_ids(horse_ids)
-                self.logger.info(f"horse_info_dfs: {len(horse_info_dfs)}件取得しました")
-                horse_dfs = pd.concat(horse_info_dfs)
+                horse_info_list, sire_names_list = self._get_horse_infos_from_ids(horse_ids)
+                self.logger.info(f"horse_info_list: {len(horse_info_list)}件取得しました")
                 # 父母馬名の上書き
                 race_info_list = override_race_info_parents_name(race_info_list, sire_names_list)
             
@@ -98,8 +96,8 @@ class RaceDataCollector:
         if race_info_list:
             self._save_to_csv(self.normalizer.ensure_dataframe(race_info_list), det_target_date, DataType.SHUTUBA)
             self.logger.info(f"race_info_listを保存しました")
-        if not horse_dfs.empty:
-            self._save_to_csv(self.normalizer.ensure_dataframe(horse_dfs), det_target_date, DataType.HISTORY)
+        if horse_info_list:
+            self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), det_target_date, DataType.HISTORY)
             self.logger.info(f"horse_info_listを保存しました")
         if race_result_list:
             self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), det_target_date, DataType.RESULT)
@@ -167,7 +165,7 @@ class RaceDataCollector:
         """
         目的の馬の過去データの取得
         """
-        history_dfs = []
+        history_df_list = []
         sire_names_list = []
         for h_id in horse_ids:
             if h_id not in self.processed_horse_ids:
@@ -178,10 +176,10 @@ class RaceDataCollector:
                 if sire_names:
                     sire_names_list.append(sire_names)
                 if not df.empty:
-                    history_dfs.append(df)
+                    history_df_list.append(df)
                     self.processed_horse_ids.add(h_id)
                 time.sleep(1)
-        return history_dfs, sire_names_list
+        return history_df_list, sire_names_list
 
     def _get_race_result_from_ids(self, race_ids):
         """
