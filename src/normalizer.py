@@ -2,8 +2,21 @@
 
 import pandas as pd
 from src.constants.schema import RaceCol
+from src.utils.date_utils import time_to_seconds
 
 class DataNormalizer:
+    @staticmethod
+    def convert_time_to_seconds(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        '1:30.3' のようなタイム文字列を秒(float)に変換して上書きする
+        """
+        # タイムカラムが存在する場合のみ実行
+        if RaceCol.TIME in df.columns:
+            # Series.apply を使って全行一括処理
+            df[RaceCol.TIME] = df[RaceCol.TIME].apply(time_to_seconds)
+            
+        return df
+        
     @staticmethod
     def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -28,7 +41,10 @@ class DataNormalizer:
         # 3. カラム名の置換を実行
         df = df.rename(columns=mapping)
 
-        # 4. 変換後の英語名で、推奨される列順序を定義
+        # 4. タイムを秒換算に書き換え
+        df = DataNormalizer.convert_time_to_seconds(df)
+
+        # 5. 変換後の英語名で、推奨される列順序を定義
         # (RaceCol の定数を使うことで、タイポを防ぎます)
         target_order = [
             RaceCol.HORSE_ID, RaceCol.HORSE_NAME, RaceCol.DATE, RaceCol.COURSE, 
