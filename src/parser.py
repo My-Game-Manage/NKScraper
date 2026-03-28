@@ -191,7 +191,7 @@ class DataParser:
             }
             self.logger.info(f"race_data: {race_data}")
 
-            race_info_list = []
+            race_result_list = []
             
             # 出馬表の行をループ
             rows = soup.select("tr")
@@ -203,11 +203,11 @@ class DataParser:
                 result = self._get_entryhorse_result_from_row(row)
                 self.logger.info(f"result: {result}")
                 if result:
-                    race_info_list.append(race_data | result)
-            return []
+                    race_result_list.append(race_data | result)
+            return race_result_list
         except Exception as e:
             self.logger.warning(f"エラーが発生しました: {e}")
-            return None, None
+            return None
         
     def _get_entryhorse_info_from_row(self, row: BeautifulSoup) -> dict:
         """
