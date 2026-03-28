@@ -275,7 +275,7 @@ class DataParser:
         return {
             RaceCol.RANK: "着順",
             RaceCol.BRACKET_NUM: self._get_horse_waku(row),
-            RaceCol.HORSE_NUM: self._get_horse_waku(row, is_result_page=True),
+            RaceCol.HORSE_NUM: self._get_horse_umaban(row, is_result_page=True),
             RaceCol.HORSE_NAME: h_name,
             RaceCol.SEX: sex,
             RaceCol.AGE: age,
