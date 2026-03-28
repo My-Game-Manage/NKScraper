@@ -194,23 +194,7 @@ class DataParser:
             self.logger.info(f"race_data: {race_data}")
 
             race_result_list = []
-            # 全ての 'td' タグの中から 'Num' クラスを持つものを探す
-            all_num_tds = soup.find_all('td', class_='Num')
-
-            uma_numbers = []
-
-            for td in all_num_tds:
-                classes = td.get('class', [])
-    
-                # 1. 'Num' クラスを持っている
-                # 2. かつ、'Waku1'〜'Waku8' のいずれも持っていない
-                # この条件で絞り込みます
-                has_waku_number = any(cls.startswith('Waku') and len(cls) > 4 for cls in classes)
-    
-                if not has_waku_number:
-                    # ここで取得できるのが「馬番」のセルです
-                    uma_numbers.append(td.get_text(strip=True))
-            print(uma_numbers)
+            
             # 出馬表の行をループ
             rows = soup.select("tr")
             for row in rows:
