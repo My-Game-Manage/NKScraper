@@ -186,6 +186,8 @@ class DataParser:
                 RaceCol.DISTANCE: distance,                       # 距離
                 RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
                 RaceCol.RACE_NUMBER: self._get_race_num(race_id), # レース番号
+                RaceCol.WEATHER: "天気",                           # 天候
+                RaceCol.TRACK_CONDITION: "馬場",                   # 馬場
             }
             self.logger.info(f"race_data: {race_data}")
             # 出馬表の行をループ
@@ -260,11 +262,11 @@ class DataParser:
             RaceCol.WEIGHT_CARRIED: self._get_horse_kinryo(row),
             RaceCol.JOCKEY: self._get_horse_jockey(row),
             RaceCol.TIME: "タイム",
-            RaceCol.RANK_DIFF: "着差",
-            RaceCol.POPULAR: "人気",
-            RaceCol.ODDS: "オッズ",
+            RaceCol.MARGIN: "着差",
+            RaceCol.POPULARITY: "人気",
+            RaceCol.WIN_ODDS: "オッズ",
             RaceCol.LAST_3F: "上り",
-            RaceCol.PASS: "通過順",
+            RaceCol.PASSING_ORDER: "通過順",
             RaceCol.STABLE: self._get_horse_trainer(row),
             RaceCol.HORSE_WEIGHT: weight,
             RaceCol.WEIGHT_DIFF: weight_diff,
