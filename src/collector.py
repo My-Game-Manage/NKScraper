@@ -44,6 +44,7 @@ class RaceDataCollector:
         self.client = NetKeibaClient(headless=headless)
         self.parser = DataParser()
         self.normalizer = DataNormalizer() # 表記ゆれ対策用
+        self.processed_horse_ids = set()
         
         # 2. パス・ディレクトリの設定
         self.base_dir = base_dir
@@ -150,6 +151,11 @@ class RaceDataCollector:
         """
         目的の馬の過去データの取得
         """
+        for h_id in horse_ids:
+            if h_id not in self.processed_horse_ids:
+                h_url = f"https://db.netkeiba.com/horse/{h_id}"
+                h_html = self.client.get_html(h_url)
+                df, sire_names = self.parser.parse_horse_history(h_html, h_id)
         return []
 
     def _get_race_result_from_ids(self, race_ids):
