@@ -95,7 +95,7 @@ class DataParser:
             print(f"エラーが発生しました: {e}")
             return None, None
 
-    def parse_horse_hisotry(self, html: str, horse_id: str):
+    def parse_horse_history(self, html: str, horse_id: str):
         """
         馬の過去レースデータを取得する
         """
