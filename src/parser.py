@@ -1,6 +1,9 @@
 # html parser
 
 import re
+import pandas as pd
+import numpy as np
+from io import StringIO
 from bs4 import BeautifulSoup
 
 from src.utils.logger import setup_logger
@@ -90,22 +93,23 @@ class DataParser:
             print(f"エラーが発生しました: {e}")
             return None, None
 
-    def parse_horse_hisotry():
+    def parse_horse_hisotry(self, html: str, horse_id: str):
         """
         馬の過去レースデータを取得する
         """
-        soup = BeautifulSoup(html, 'html.parser')
-        
-        # 馬名の取得
-        name_tag = soup.select_one(".horse_title h1, .db_head_name h1")
-        horse_name = name_tag.get_text(strip=True) if name_tag else "不明"
-
-        # 父母馬名の取得
-        sire_dad_name = soup.select_one(".b_ml").get_text(strip=True) if soup.select_one(".b_ml") else "Unknown"
-        sire_mam_name = soup.select_one(".b_fml").get_text(strip=True) if soup.select_one(".b_fml") else "Unknown"
-        sire_names = [sire_dad_name, sire_mam_name]
-        
+        self.logger.info(f"horse_id: {horse_id} の過去履歴の取得開始...")
         try:
+            soup = BeautifulSoup(html, 'html.parser')
+        
+            # 馬名の取得
+            name_tag = soup.select_one(".horse_title h1, .db_head_name h1")
+            horse_name = name_tag.get_text(strip=True) if name_tag else "不明"
+
+            # 父母馬名の取得
+            sire_dad_name = soup.select_one(".b_ml").get_text(strip=True) if soup.select_one(".b_ml") else "Unknown"
+            sire_mam_name = soup.select_one(".b_fml").get_text(strip=True) if soup.select_one(".b_fml") else "Unknown"
+            sire_names = [sire_dad_name, sire_mam_name]
+        
             # tableからDataFrameを作成
             dfs = pd.read_html(StringIO(html))
             res_df = pd.DataFrame()
