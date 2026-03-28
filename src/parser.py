@@ -36,6 +36,7 @@ SELECTOR_TAG_HORSE = {
 
 SELECTOR_TAG_RESULT = {
     RaceCol.HORSE_NAME: ".Horse_Name a",
+    RaceCol.AGE: ".Horse_Info_Detail",
 }
 
 class DataParser:
@@ -246,10 +247,10 @@ class DataParser:
         self.logger.debug(f"get_entryhorse_result_from_row: start processing ...")
         
         # 馬名・ID
-        h_name, h_id = self._get_horse_name_and_horse_id(row)
+        h_name, h_id = self._get_horse_name_and_horse_id(row, is_result_page=True)
         
         # 性齢：class="Age" を使用／中央はclass="Barei"を使用
-        sex, age = self._get_horse_sex_and_age(row)            
+        sex, age = self._get_horse_sex_and_age(row, is_result_page=True)            
         
         # 馬体重の分離
         weight, weight_diff = self._get_horse_weight_and_diff(row)
@@ -257,7 +258,7 @@ class DataParser:
         return {
             RaceCol.RANK: "着順",
             RaceCol.BRACKET_NUM: self._get_horse_waku(row),
-            RaceCol.HORSE_NUM: self._get_horse_umaban(row),
+            RaceCol.HORSE_NUM: self._get_horse_waku(row),
             RaceCol.HORSE_NAME: h_name,
             RaceCol.SEX: sex,
             RaceCol.AGE: age,
@@ -336,14 +337,14 @@ class DataParser:
     def _get_horse_trainer(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.STABLE])
 
-    def _get_horse_name_and_horse_id(self, soup: BeautifulSoup) -> list:
-        h_tag = soup.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
+    def _get_horse_name_and_horse_id(self, soup: BeautifulSoup, is_result_page: bool=False) -> list:
+        h_tag = soup.select_one(SELECTOR_TAG_RESULT[RaceCol.HORSE_NAME] if is_result_page else SELECTOR_TAG[RaceCol.HORSE_NAME])
         h_name = h_tag.get_text(strip=True) if h_tag else ""
         h_id = re.search(r'horse/(\d+)', h_tag['href']).group(1) if h_tag and 'href' in h_tag.attrs else ""
         return h_name, h_id
         
-    def _get_horse_sex_and_age(self, soup: BeautifulSoup) -> list:
-        age_td = soup.select_one(SELECTOR_TAG[RaceCol.AGE])
+    def _get_horse_sex_and_age(self, soup: BeautifulSoup, is_result_page: bool=False) -> list:
+        age_td = soup.select_one(SELECTOR_TAG_RESULT[RaceCol.AGE] if is_result_page else SELECTOR_TAG[RaceCol.AGE])
         if not age_td:
             age_td = soup.select_one(SELECTOR_TAG_NAR[RaceCol.AGE])
         return self._split_sex_age(age_td.get_text(strip=True)) if age_td else (None, None)
