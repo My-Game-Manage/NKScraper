@@ -55,11 +55,11 @@ def get_race_url(race_id: str, page_type: NetkeibaPageType=NetkeibaPageType.SHUT
     
     return f"https://{domain}.netkeiba.com/{path}?race_id={race_id}"
 
-def get_horse_url() -> str:
+def get_horse_url(horse_id: str) -> str:
     """
     馬IDからフルURLを生成する
     """
-    return f"https://db.netkeiba.com/horse/{h_id}"
+    return f"https://db.netkeiba.com/horse/{horse_id}"
 
 def get_top_page_url(target_date: str, is_nar: bool = True) -> str:
     """
