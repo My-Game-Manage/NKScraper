@@ -78,6 +78,11 @@ class DataNormalizer:
 
         # 5. 変換後の英語名で、推奨される列順序を定義
         # (RaceCol の定数を使うことで、タイポを防ぎます)
+        # ordered_cols = [
+        #        '馬ID', '馬名', '日付', '開催', '天気', 'R', 'レース名', '頭数', '枠番', '馬番',
+        #        'オッズ', '人気', '着順', '騎手', '斤量', '種別', '距離', '馬場',
+        #        'タイム', '着差', '通過', '上り', '体重', '体重増減', '勝ち馬(2着馬)', '賞金'
+        #    ]
         target_order = [
             RaceCol.HORSE_ID, RaceCol.HORSE_NAME, RaceCol.DATE, RaceCol.COURSE, 
             RaceCol.WEATHER, RaceCol.RACE_NUMBER, RaceCol.RACE_NAME, RaceCol.NUM_HORSES, 
