@@ -100,6 +100,7 @@ class RaceDataCollector:
             self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), det_target_date, DataType.HISTORY)
             self.logger.info(f"horse_info_listを保存しました")
         if race_result_list:
+            self.logger.info(f"result_list: {race_result_list}")
             self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), det_target_date, DataType.RESULT)
             self.logger.info(f"race_result_listを保存しました")
 
