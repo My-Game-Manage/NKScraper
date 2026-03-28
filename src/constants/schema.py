@@ -35,6 +35,7 @@ class RaceCol:
     ODDS = "odds"
     WIN_ODDS = "win_odds"
     POPULARITY = "popularity"
+    RANK = "rank"
     STABLE = "stable"
     HORSE_WEIGHT = "horse_weight"
     WEIGHT_DIFF = "weight_diff"
@@ -69,6 +70,7 @@ class RaceCol:
         ODDS: "オッズ",
         WIN_ODDS: "単勝オッズ",
         POPULARITY: "人気",
+        RANK: "着順",
         STABLE: "厩舎",
         HORSE_WEIGHT: "馬体重",
         WEIGHT_DIFF: "体重増減",
