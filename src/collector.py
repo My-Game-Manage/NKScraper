@@ -160,7 +160,7 @@ class RaceDataCollector:
         sire_names_list = []
         for h_id in horse_ids:
             if h_id not in self.processed_horse_ids:
-                h_url = get_horse_url(h_url)
+                h_url = get_horse_url(h_id)
                 h_html = self.client.get_html(h_url)
                 df, sire_names = self.parser.parse_horse_history(h_html, h_id)
                 self.logger.info(f"get {h_id} data >> {df}")
