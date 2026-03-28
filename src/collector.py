@@ -10,6 +10,9 @@ collector.py の概要
 import os
 import time
 from enum import Enum
+
+import pandas as pd
+
 from src.constants.schema import NetkeibaPageType
 from src.netkeiba_client import NetKeibaClient
 from src.parser import DataParser
