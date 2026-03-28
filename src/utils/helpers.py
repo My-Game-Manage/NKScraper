@@ -140,3 +140,20 @@ def filter_race_ids_by_number(race_ids: list, target_nums: list) -> list:
     ]
     
     return sorted(filtered)
+
+def override_race_info_parents_name(race_info_list: list, sire_names_list: list) -> list:
+    """
+    馬の父母名を上書きする
+    """
+    # 手順1: Bを ID -> {父, 母} の辞書形式に変換する
+    # {101: {'父': '...', '母': '...'}, 102: {...}} という形になります
+    sire_map = {item[RaceCol.HORSE_ID]: item for item in sire_names_list}
+
+    # 手順2: Aをループで回して、Bに同じIDがあれば上書きする
+    for item_a in race_info_list:
+        target_id = item_a[RaceCol.HORSE_ID]
+        if target_id in sire_map:
+            # B側に存在するデータで更新
+            item_a[RaceCol.FATHER] = sire_map[target_id].get(RaceCol.FATHER, item_a[RaceCol.FATHER])
+            item_a[RaceCol.MOTHER] = sire_map[target_id].get(RaceCol.MOTHER, item_a[RaceCol.MOTHER])
+    return race_info_list
