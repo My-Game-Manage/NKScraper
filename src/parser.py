@@ -183,7 +183,7 @@ class DataParser:
                 RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
                 RaceCol.RACE_NUMBER: self._get_race_num(race_id), # レース番号
             }
-            self.logger.debug(f"race_data: {race_data}")
+            self.logger.info(f"race_data: {race_data}")
             # 出馬表の行をループ
             rows = soup.select("tr.HorseList")
             for row in rows:
