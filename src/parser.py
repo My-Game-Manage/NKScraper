@@ -34,6 +34,10 @@ SELECTOR_TAG_HORSE = {
     RaceCol.MOTHER: ".b_fml",
 }
 
+SELECTOR_TAG_RESULT = {
+    RaceCol.HORSE_NAME: ".Horse_Name a",
+}
+
 class DataParser:
     """
     データを適切な形で取得する
@@ -188,7 +192,7 @@ class DataParser:
             rows = soup.select("tr")
             for row in rows:
                 # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
-                h_tag = row.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
+                h_tag = row.select_one(SELECTOR_TAG_RESULT[RaceCol.HORSE_NAME])
                 self.logger.info(f"h_tag in result: {h_tag}")
                 if not h_tag:
                     continue
