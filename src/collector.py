@@ -207,7 +207,7 @@ class RaceDataCollector:
         """
         url = get_race_url(race_id, NetkeibaPageType.RESULT)
         html = self.client.get_html(url)
-        result_info = self.parser.parse_race_result(html, race_id)
+        result_info = self.parser.parse_race_result_page(html, race_id)
         return result_info
 
     def _save_to_csv(self, data_df: pd.DataFrame, date_str: str, data_type: DataType):
