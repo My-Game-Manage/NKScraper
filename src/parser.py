@@ -85,6 +85,7 @@ class DataParser:
                 RaceCol.COURSE: course_name,
                 RaceCol.RACE_NUMBER: race_num,
             }
+            self.logger.debug(f"fixed_data: {fixed_data}")
         
             # 出馬表の行をループ
             rows = soup.select("tr.HorseList")
@@ -93,11 +94,11 @@ class DataParser:
                 h_tag = row.select_one(".HorseName a")
                 if not h_tag:
                     continue
-                r_info = self._get_entryhorse_info_from_row(row, fixed_data)
-                self.logger.debug(f"r_info: {r_info}")
-                if r_info:
-                    race_info_list.append(r_info)
-                    horse_ids.append(r_info[RaceCol.HORSE_ID])
+                row_info = self._get_entryhorse_info_from_row(row)
+                self.logger.debug(f"row_info: {row_info}")
+                if row_info:
+                    race_info_list.append(fixed_data | row_info)
+                    horse_ids.append(row_info[RaceCol.HORSE_ID])
 
             return race_info_list, horse_ids
         except Exception as e:
@@ -183,7 +184,7 @@ class DataParser:
             print(f"解析エラー (HorseID: {horse_id}): {e}")
             return pd.DataFrame(), sire_names
 
-    def _get_entryhorse_info_from_row(self, row: list, fixed_data: dict) -> dict:
+    def _get_entryhorse_info_from_row(self, row: list) -> dict:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
         """
@@ -220,11 +221,6 @@ class DataParser:
         weight, weight_diff = self._split_weight(weight_raw)
 
         return {
-            RaceCol.COURSE: fixed_data[RaceCol.COURSE],
-            RaceCol.RACE_NUMBER: fixed_data[RaceCol.RACE_NUMBER],
-            RaceCol.RACE_NAME: fixed_data[RaceCol.RACE_NAME],
-            RaceCol.SURFACE: fixed_data[RaceCol.SURFACE],
-            RaceCol.DISTANCE: fixed_data[RaceCol.DISTANCE],
             RaceCol.BRACKET_NUM: waku,
             RaceCol.HORSE_NUM: umaban,
             RaceCol.HORSE_NAME: h_name,
