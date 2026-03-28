@@ -30,6 +30,11 @@ class DataType(Enum):
 
 DEFAULT_BASE_DIR = 'data'
 
+FILE_PREFIX_MAP = {
+    DataType.SHUTUBA: "full_races",
+    DataType.HISTORY: "horse_history",
+    DataType.RESULT: "result_races",
+}
 
 class RaceDataCollector:
     def __init__(self, headless: bool = True, base_dir: str = DEFAULT_BASE_DIR):
@@ -85,13 +90,13 @@ class RaceDataCollector:
             
         # 3. CSVとして保存
         if race_info_list:
-            self._save_to_csv(race_info_list, DataType.SHUTUBA)
+            self._save_to_csv(self.normalizer.ensure_dataframe(race_info_list), DataType.SHUTUBA)
             self.logger.info(f"race_info_listを保存しました")
         if horse_info_list:
-            self._save_to_csv(horse_info_list, DataType.HISTORY)
+            self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), DataType.HISTORY)
             self.logger.info(f"horse_info_listを保存しました")
         if race_result_list:
-            self._save_to_csv(race_result_list, DataType.RESULT)
+            self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), DataType.RESULT)
             self.logger.info(f"race_result_listを保存しました")
 
         self.logger.info("取得と保存が終了しました")
@@ -192,11 +197,20 @@ class RaceDataCollector:
         race_info, horse_ids = self.parser.parse_race_page(html, race_id)
         return race_info, horse_ids
 
-    def _save_to_csv(self, data_list: list, data_type: DataType):
+    def _save_to_csv(self, data_df: pd.DataFrame, data_type: DataType, date_str: str, suffix: str):
         """
-        データ形式をDataFrameにしてCSVで保存する
+        データをCSVで保存する
         """
-        pass
+        if data_df.empty:
+            return
+
+        suffix_str = f"_{suffix}" if suffix else ""
+        prefix_str = FILE_PREFIX_MAP.get(data_type, DataType.SHUTUBA)
+        target_path = f"{self.base_dir}/{prefix_str}_{date_str}{suffix_str}.csv"
+
+        data_df.to_csv(target_path, index=False, encoding="utf_8_sig")
+        
+        self.logger.info(f"--- 保存完了: {target_path} ---")
         
     def _determine_target_date(self, input_date: str) -> str:
         """
