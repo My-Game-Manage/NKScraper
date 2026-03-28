@@ -18,7 +18,7 @@ from src.utils.logger import setup_logger
 from src.utils.helpers import (
     get_top_page_url, get_jyo_name,
     filter_race_ids_exclude_course, filter_race_ids_by_course, filter_race_ids_by_number,
-    get_race_url
+    get_race_url, get_horse_url
 )
 
 class DataType(Enum):
@@ -153,7 +153,7 @@ class RaceDataCollector:
         """
         for h_id in horse_ids:
             if h_id not in self.processed_horse_ids:
-                h_url = f"https://db.netkeiba.com/horse/{h_id}"
+                h_url = get_horse_url(h_url)
                 h_html = self.client.get_html(h_url)
                 df, sire_names = self.parser.parse_horse_history(h_html, h_id)
         return []
