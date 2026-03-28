@@ -201,7 +201,7 @@ class DataParser:
         """
         self.logger.debug(f"get_entryhorse_info_from_row: start processing ...")
         # 枠番・馬番（部分一致セレクタを使用）
-        waku_tag = self._get_horse_waku(row)
+        waku = self._get_horse_waku(row)
             
         umaban_tag = row.select_one("td[class*='Umaban']")
         umaban = umaban_tag.get_text(strip=True) if umaban_tag else ""
