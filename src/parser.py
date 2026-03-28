@@ -190,12 +190,14 @@ class DataParser:
                 RaceCol.TRACK_CONDITION: "馬場",                   # 馬場
             }
             self.logger.info(f"race_data: {race_data}")
+
+            race_info_list = []
+            
             # 出馬表の行をループ
             rows = soup.select("tr")
             for row in rows:
                 # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
                 h_tag = row.select_one(SELECTOR_TAG_RESULT[RaceCol.HORSE_NAME])
-                self.logger.info(f"h_tag in result: {h_tag}")
                 if not h_tag:
                     continue
                 result = self._get_entryhorse_result_from_row(row)
