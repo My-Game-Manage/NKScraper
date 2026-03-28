@@ -74,7 +74,35 @@ class DataParser:
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, "td[class*='Waku']")
 
+    def _get_horse_umaban(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, "td[class*='Umaban']")
         
+    def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, "td:nth-of-type(6)")
+
+    def _get_horse_jockey(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, ".Jockey a")
+
+    def _get_horse_trainer(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, ".Trainer")
+
+    def _get_horse_name_and_horse_id(self, soup: BeautifulSoup) -> list:
+        h_tag = soup.select_one(".HorseName a")
+        h_name = h_tag.get_text(strip=True) if h_tag else ""
+        h_id = re.search(r'horse/(\d+)', h_tag['href']).group(1) if h_tag and 'href' in h_tag.attrs else ""
+        return h_name, h_id
+        
+    def _get_horse_sex_and_age(self, soup: BeautifulSoup) -> list:
+        age_td = soup.select_one(".Age")
+        if not age_td:
+            age_td = soup.select_one(".Barei")
+        return self._split_sex_age(age_td.get_text(strip=True)) if age_td else (None, None)
+        
+    def _get_horse_weight_and_diff(self, soup: BeautifulSoup) -> list:
+        weight_tag = soup.select_one(".Weight") # 独立したWeightクラス（馬体重用）
+        weight_raw = weight_tag.get_text(strip=True) if weight_tag else ""
+        return self._split_weight(weight_raw)
+
     def parse_race_page(self, html, race_id):
         """
         ページから必要な情報を取得する
@@ -195,52 +223,31 @@ class DataParser:
             print(f"解析エラー (HorseID: {horse_id}): {e}")
             return pd.DataFrame(), sire_names
 
-    def _get_entryhorse_info_from_row(self, row: list) -> dict:
+    def _get_entryhorse_info_from_row(self, row: BeautifulSoup) -> dict:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
         """
         self.logger.debug(f"get_entryhorse_info_from_row: start processing ...")
-        # 枠番・馬番（部分一致セレクタを使用）
-        waku = self._get_horse_waku(row)
-            
-        umaban_tag = row.select_one("td[class*='Umaban']")
-        umaban = umaban_tag.get_text(strip=True) if umaban_tag else ""
-            
         # 馬名・ID
-        h_tag = row.select_one(".HorseName a")
-        h_name = h_tag.get_text(strip=True) if h_tag else ""
-        h_id = re.search(r'horse/(\d+)', h_tag['href']).group(1) if h_tag and 'href' in h_tag.attrs else ""
+        h_name, h_id = self._get_horse_name_and_horse_id(row)
 
         # 性齢：class="Age" を使用／中央はclass="Barei"を使用
-        age_td = row.select_one(".Age")
-        if not age_td:
-            age_td = row.select_one(".Barei")
-        sex, age = self._split_sex_age(age_td.get_text(strip=True)) if age_td else (None, None)
-            
-        # 斤量：td:nth-of-type(6) を使用
-        kinryo_td = row.select_one("td:nth-of-type(6)")
-        kinryo = kinryo_td.get_text(strip=True) if kinryo_td else ""
-            
-        # 騎手・厩舎
-        jockey = row.select_one(".Jockey a").get_text(strip=True) if row.select_one(".Jockey a") else ""
-        trainer = row.select_one(".Trainer").get_text(strip=True) if row.select_one(".Trainer") else ""
+        sex, age = self._get_horse_sex_and_age(row)
             
         # 馬体重の分離
-        weight_tag = row.select_one(".Weight") # 独立したWeightクラス（馬体重用）
-        weight_raw = weight_tag.get_text(strip=True) if weight_tag else ""
-        weight, weight_diff = self._split_weight(weight_raw)
+        weight, weight_diff = self._get_horse_weight_and_diff(row)
 
         return {
-            RaceCol.BRACKET_NUM: waku,
-            RaceCol.HORSE_NUM: umaban,
+            RaceCol.BRACKET_NUM: self._get_horse_waku(row),
+            RaceCol.HORSE_NUM: self._get_horse_umaban(row),
             RaceCol.HORSE_NAME: h_name,
             RaceCol.FATHER: 'Unknown',
             RaceCol.MOTHER: 'Unknown',
             RaceCol.SEX: sex,
             RaceCol.AGE: age,
-            RaceCol.WEIGHT_CARRIED: kinryo,
-            RaceCol.JOCKEY: jockey,
-            RaceCol.STABLE: trainer,
+            RaceCol.WEIGHT_CARRIED: self._get_horse_kinryo(row),
+            RaceCol.JOCKEY: self._get_horse_jockey(row),
+            RaceCol.STABLE: self._get_horse_trainer(row),
             RaceCol.HORSE_WEIGHT: weight,
             RaceCol.WEIGHT_DIFF: weight_diff,
             RaceCol.HORSE_ID: h_id,
