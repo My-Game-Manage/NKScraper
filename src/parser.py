@@ -3,12 +3,21 @@
 import re
 from bs4 import BeautifulSoup
 
+from src.utils.logger import setup_logger
 from src.constants.schema import RaceCol
 from src.utils.helpers import get_jyo_name
 
+
 class DataParser:
+    """
+    データを適切な形で取得する
+    """
     def __init__(self):
-        self._any = None
+        _CLASSNAME = "DataParser"
+        # クラス名を名前としてロガーを作成
+        self.logger = setup_logger(_CLASSNAME)
+
+        self.logger.info("初期化しています...")
         
     def extract_race_ids(self, html_content: str) -> list:
         """
@@ -41,6 +50,7 @@ class DataParser:
         """
         ページから必要な情報を取得する
         """
+        self.logger.debug(f"into parse_race_page: start processing ...")
         try:
             soup = BeautifulSoup(html, 'html.parser')
             
