@@ -190,7 +190,7 @@ class RaceDataCollector:
         for r_id in race_ids:
             result = self._collect_result_at(r_id)
             if result:
-                result_list.append(result)
+                result_list += result
         return result_list
 
     def _collect_race_at(self, race_id):
