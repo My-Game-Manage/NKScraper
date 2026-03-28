@@ -173,7 +173,7 @@ class RaceDataCollector:
                 h_url = get_horse_url(h_id)
                 h_html = self.client.get_html(h_url)
                 df, sire_names = self.parser.parse_horse_history(h_html, h_id)
-                self.logger.info(f"get {h_id} data >> {df}")
+                self.logger.debug(f"get {h_id} data >> {df}")
                 if sire_names:
                     sire_names_list.append(sire_names)
                 if not df.empty:
