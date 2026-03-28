@@ -16,6 +16,21 @@ class DataNormalizer:
             df[RaceCol.TIME] = df[RaceCol.TIME].apply(time_to_seconds)
             
         return df
+
+    @staticmethod
+    def ensure_dataframe(data) -> pd.DataFrame:
+    """
+    入力がリストならDataFrameに変換し、DataFrameならそのまま返す。
+    それ以外（Noneなど）の場合は空のDataFrameを返す。
+    """
+    if isinstance(data, pd.DataFrame):
+        return data
+    
+    if isinstance(data, list):
+        return pd.DataFrame(data)
+    
+    # データが空、または想定外の型の場合
+    return pd.DataFrame()
         
     @staticmethod
     def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
