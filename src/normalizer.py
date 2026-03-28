@@ -28,7 +28,7 @@ class DataNormalizer:
             return data
     
         if isinstance(data, list):
-            if isinstance(data[0], pd.DataFrame)
+            if isinstance(data[0], pd.DataFrame):
                 return pd.concat(data)
             else:
                 return pd.DataFrame(data)
