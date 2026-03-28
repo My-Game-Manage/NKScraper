@@ -51,10 +51,26 @@ class DataParser:
         # 2. 重複を除去し、昇順に並べ替えて返す
         return sorted(list(set(race_ids)))
 
+    def _get_elm_by_selector(self, soup: BeautifulSoup, selector: str) -> str:
+        elm_tag = soup.select_one(selector)
+        return elm_tag.get_text(strip=True) if elm_tag else ""
+
     def _get_race_name(self, soup: BeautifulSoup) -> str:
-        race_name_tag = soup.select_one(".RaceName")
-        race_name = race_name_tag.get_text(strip=True) if race_name_tag else ""
-        return race_name
+        return self._get_elm_by_selector(soup, ".RaceName")
+
+    def _get_race_num(self, race_id: str) -> str:
+        return int(race_id[-2:])
+
+    def _get_cond_and_dist(self, soup: BeautifulSoup) -> list:
+        # レース基本情報
+        race_data = self._get_elm_by_selector(soup, ".RaceData01")
+        
+        # 距離と種別の抽出 (例: ダ1600m)
+        dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
+        condition = dist_match.group(1) if dist_match else ""
+        distance = dist_match.group(2) if dist_match else ""
+        return condition, distance
+
         
     def parse_race_page(self, html, race_id):
         """
@@ -64,34 +80,20 @@ class DataParser:
         try:
             soup = BeautifulSoup(html, 'html.parser')
             
-            # レース基本情報
-            #race_name_tag = soup.select_one(".RaceName")
-            #race_name = race_name_tag.get_text(strip=True) if race_name_tag else ""
-            race_name = self._get_race_name(soup)
-        
-            race_data_tag = soup.select_one(".RaceData01")
-            race_data = race_data_tag.get_text(strip=True) if race_data_tag else ""
-        
-            # 距離と種別の抽出 (例: ダ1600m)
-            dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
-            condition = dist_match.group(1) if dist_match else ""
-            distance = dist_match.group(2) if dist_match else ""
-        
-            course_name = get_jyo_name(race_id)
-            race_num = int(race_id[-2:])
-
+            condition, distance = self._get_cond_and_dist(soup)
+            
             race_info_list = []
             horse_ids = []
 
-            # 固定部分をまとめる
-            fixed_data = {
-                RaceCol.RACE_NAME: race_name,
-                RaceCol.SURFACE: condition,
-                RaceCol.DISTANCE: distance,
-                RaceCol.COURSE: course_name,
-                RaceCol.RACE_NUMBER: race_num,
+            # レース情報
+            race_data = {
+                RaceCol.RACE_NAME: self._get_race_name(soup),     # レース名
+                RaceCol.SURFACE: condition,                       # 馬場
+                RaceCol.DISTANCE: distance,                       # 距離
+                RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
+                RaceCol.RACE_NUMBER: self._get_race_num(race_id), # レース番号
             }
-            self.logger.debug(f"fixed_data: {fixed_data}")
+            self.logger.debug(f"race_data: {race_data}")
         
             # 出馬表の行をループ
             rows = soup.select("tr.HorseList")
@@ -103,7 +105,7 @@ class DataParser:
                 row_info = self._get_entryhorse_info_from_row(row)
                 self.logger.debug(f"row_info: {row_info}")
                 if row_info:
-                    race_info_list.append(fixed_data | row_info)
+                    race_info_list.append(race_data | row_info)
                     horse_ids.append(row_info[RaceCol.HORSE_ID])
 
             return race_info_list, horse_ids
