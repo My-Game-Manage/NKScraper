@@ -43,6 +43,8 @@ class RaceCol:
     PRIZE = "prize"
     FATHER = "father_name"
     MOTHER = "mother_name"
+    # --- タグ処理用追加 ---
+    RACE_DATA = "race_data"
 
     # --- 日本語戻しマッピング (表示・出力用) ---
     TO_JAPANESE = {
@@ -77,5 +79,6 @@ class RaceCol:
         WINNER_NAME: "勝ち馬",
         PRIZE: "賞金",
         FATHER: "父馬",
-        MOTHER: "母馬"
+        MOTHER: "母馬",
+        RACE_DATA: "レース情報",
     }
