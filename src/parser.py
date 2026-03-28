@@ -186,6 +186,7 @@ class DataParser:
             self.logger.info(f"race_data: {race_data}")
             # 出馬表の行をループ
             rows = soup.select("table.RaceTable01")
+            self.logger.info(f"result rows: {rows}")
             for row in rows:
                 # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
                 h_tag = row.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
