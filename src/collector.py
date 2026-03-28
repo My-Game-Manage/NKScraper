@@ -8,6 +8,7 @@ collector.py の概要
 """
 
 import os
+import time
 from enum import Enum
 from src.constants.schema import NetkeibaPageType
 from src.netkeiba_client import NetKeibaClient
@@ -18,7 +19,8 @@ from src.utils.logger import setup_logger
 from src.utils.helpers import (
     get_top_page_url, get_jyo_name,
     filter_race_ids_exclude_course, filter_race_ids_by_course, filter_race_ids_by_number,
-    get_race_url, get_horse_url
+    get_race_url, get_horse_url,
+    override_race_info_parents_name,
 )
 
 class DataType(Enum):
@@ -76,8 +78,10 @@ class RaceDataCollector:
             self.logger.info(f"horse_ids: {len(horse_ids)}件取得しました")
             if horse_ids and not only_race:
                 # 馬レース履歴はまとめて取得
-                horse_info_list = self._get_horse_infos_from_ids(horse_ids)
+                horse_info_list, sire_names_list = self._get_horse_infos_from_ids(horse_ids)
                 self.logger.info(f"horse_info_list: {len(horse_info_list)}件取得しました")
+                # 父母馬名の上書き
+                race_info_list = override_race_info_parents_name(race_info_list, sire_names_list)
             
         # 3. CSVとして保存
         if race_info_list:
@@ -151,12 +155,20 @@ class RaceDataCollector:
         """
         目的の馬の過去データの取得
         """
+        history_dfs = []
+        sire_names_list = []
         for h_id in horse_ids:
             if h_id not in self.processed_horse_ids:
                 h_url = get_horse_url(h_url)
                 h_html = self.client.get_html(h_url)
                 df, sire_names = self.parser.parse_horse_history(h_html, h_id)
-        return []
+                if sire_names:
+                    sire_names_list.append(sire_names)
+                if not df.empty:
+                    history_dfs.append(df)
+                    self.processed_horse_ids.add(h_id)
+                time.sleep(1)
+        return history_dfs, sire_names_list
 
     def _get_race_result_from_ids(self, race_ids):
         """
