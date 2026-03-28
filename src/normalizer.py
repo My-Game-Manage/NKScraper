@@ -21,13 +21,17 @@ class DataNormalizer:
     def ensure_dataframe(data) -> pd.DataFrame:
         """
         入力がリストならDataFrameに変換し、DataFrameならそのまま返す。
+        リストの中身がDataFrameの場合は結合してDataFrameにして返す
         それ以外（Noneなど）の場合は空のDataFrameを返す。
         """
         if isinstance(data, pd.DataFrame):
             return data
     
         if isinstance(data, list):
-            return pd.DataFrame(data)
+            if isinstance(data[0], pd.DataFrame)
+                return pd.concat(data)
+            else:
+                return pd.DataFrame(data)
     
         # データが空、または想定外の型の場合
         return pd.DataFrame()
