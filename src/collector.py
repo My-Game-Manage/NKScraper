@@ -93,7 +93,8 @@ class RaceDataCollector:
         if race_result_list:
             self._save_to_csv(race_result_list, DataType.RESULT)
             self.logger.info(f"race_result_listを保存しました")
-        print("終了しました")
+
+        self.logger.info("取得と保存が終了しました")
 
     def _get_target_race_ids(self, date, course_codes, race_nums) -> list:
         """
@@ -162,6 +163,7 @@ class RaceDataCollector:
                 h_url = get_horse_url(h_url)
                 h_html = self.client.get_html(h_url)
                 df, sire_names = self.parser.parse_horse_history(h_html, h_id)
+                self.logger.info(f"get {h_id} data >> {df}")
                 if sire_names:
                     sire_names_list.append(sire_names)
                 if not df.empty:
