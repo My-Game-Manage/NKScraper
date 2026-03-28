@@ -35,7 +35,20 @@ class DataNormalizer:
     
         # データが空、または想定外の型の場合
         return pd.DataFrame()
+    
+    @staticmethod
+    def normalize_horse_history_columns(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        スペース等を除去する
+        """
+        # 1. カラム名のクリーニング（スペース除去）
+        df.columns = [c.replace(' ', '').replace('　', '') for c in df.columns]
         
+        # 2. 全要素のクリーニング（Pandas 2.1.0+ 対応の map を使用）
+        df = df.map(lambda x: x.strip().replace(' ', '').replace('　', '') if isinstance(x, str) else x)
+
+        return df
+
     @staticmethod
     def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
         """
