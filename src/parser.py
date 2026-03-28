@@ -50,7 +50,7 @@ class DataParser:
         """
         ページから必要な情報を取得する
         """
-        self.logger.debug(f"into parse_race_page: start processing ...")
+        self.logger.info(f"into parse_race_page: start processing ...")
         try:
             soup = BeautifulSoup(html, 'html.parser')
             
