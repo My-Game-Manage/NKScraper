@@ -1,5 +1,5 @@
 from src.constants.master_data import JYO_NAME_MAP, JRA_MAX_COURSE_CODE, EXCLUDE_COURSES
-from src.constants.schema import NetkeibaDomain, NetkeibaPageType
+from src.constants.schema import NetkeibaDomain, NetkeibaPageType, RaceCol
 
 def is_nar_id(race_id: str) -> bool:
     """
