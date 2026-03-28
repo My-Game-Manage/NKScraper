@@ -137,11 +137,8 @@ class DataParser:
             if res_df.empty:
                 return res_df, sire_names
 
-            # 1. カラム名のクリーニング（スペース除去）
-            res_df.columns = [c.replace(' ', '').replace('　', '') for c in res_df.columns]
-            
-            # 2. 全要素のクリーニング（Pandas 2.1.0+ 対応の map を使用）
-            res_df = res_df.map(lambda x: x.strip().replace(' ', '').replace('　', '') if isinstance(x, str) else x)
+            # 1. カラム名のクリーニング（スペース除去）＆ 全要素のクリーニング
+            res_df = self.normalizer.normalize_horse_history_columns(res_df)
 
             # 3. 馬体重の分割
             if '馬体重' in res_df.columns:
