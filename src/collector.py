@@ -69,7 +69,8 @@ class RaceDataCollector:
         self.logger.info("Collectorを実行開始します...")
         
         # 1. レースID一覧を取得（client）
-        target_race_ids = self._get_target_race_ids(target_date, course_filter, race_num_filter)
+        det_target_date = self.determine_target_date(target_date)
+        target_race_ids = self._get_target_race_ids(det_target_date, course_filter, race_num_filter)
         self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
 
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
@@ -90,13 +91,13 @@ class RaceDataCollector:
             
         # 3. CSVとして保存
         if race_info_list:
-            self._save_to_csv(self.normalizer.ensure_dataframe(race_info_list), DataType.SHUTUBA)
+            self._save_to_csv(self.normalizer.ensure_dataframe(race_info_list), det_target_date, DataType.SHUTUBA)
             self.logger.info(f"race_info_listを保存しました")
         if horse_info_list:
-            self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), DataType.HISTORY)
+            self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), det_target_date, DataType.HISTORY)
             self.logger.info(f"horse_info_listを保存しました")
         if race_result_list:
-            self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), DataType.RESULT)
+            self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), det_target_date, DataType.RESULT)
             self.logger.info(f"race_result_listを保存しました")
 
         self.logger.info("取得と保存が終了しました")
@@ -197,16 +198,15 @@ class RaceDataCollector:
         race_info, horse_ids = self.parser.parse_race_page(html, race_id)
         return race_info, horse_ids
 
-    def _save_to_csv(self, data_df: pd.DataFrame, data_type: DataType, date_str: str, suffix: str):
+    def _save_to_csv(self, data_df: pd.DataFrame, date_str: str, data_type: DataType):
         """
         データをCSVで保存する
         """
         if data_df.empty:
             return
 
-        suffix_str = f"_{suffix}" if suffix else ""
         prefix_str = FILE_PREFIX_MAP.get(data_type, DataType.SHUTUBA)
-        target_path = f"{self.base_dir}/{prefix_str}_{date_str}{suffix_str}.csv"
+        target_path = f"{self.base_dir}/{prefix_str}_{date_str}.csv"
 
         data_df.to_csv(target_path, index=False, encoding="utf_8_sig")
         
