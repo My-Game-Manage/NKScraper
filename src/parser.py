@@ -28,6 +28,12 @@ SELECTOR_TAG_NAR = {
     RaceCol.AGE: ".Barei",
 }
 
+SELECTOR_TAG_HORSE = {
+    RaceCol.HORSE_NAME: ".horse_title h1, .db_head_name h1",
+    RaceCol.FATHER: ".b_ml",
+    RaceCol.MOTHER: ".b_fml",
+}
+
 class DataParser:
     """
     データを適切な形で取得する
@@ -67,58 +73,6 @@ class DataParser:
 
         # 2. 重複を除去し、昇順に並べ替えて返す
         return sorted(list(set(race_ids)))
-
-    def _get_elm_by_selector(self, soup: BeautifulSoup, selector: str) -> str:
-        elm_tag = soup.select_one(selector)
-        return elm_tag.get_text(strip=True) if elm_tag else ""
-
-    def _get_race_name(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_NAME])
-
-    def _get_race_num(self, race_id: str) -> str:
-        return int(race_id[-2:])
-
-    def _get_cond_and_dist(self, soup: BeautifulSoup) -> list:
-        # レース基本情報
-        race_data = self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_DATA])
-        
-        # 距離と種別の抽出 (例: ダ1600m)
-        dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
-        condition = dist_match.group(1) if dist_match else ""
-        distance = dist_match.group(2) if dist_match else ""
-        return condition, distance
-
-    def _get_horse_waku(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
-
-    def _get_horse_umaban(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.HORSE_NUM])
-        
-    def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.WEIGHT_CARRIED])
-
-    def _get_horse_jockey(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.JOCKEY])
-
-    def _get_horse_trainer(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.STABLE])
-
-    def _get_horse_name_and_horse_id(self, soup: BeautifulSoup) -> list:
-        h_tag = soup.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
-        h_name = h_tag.get_text(strip=True) if h_tag else ""
-        h_id = re.search(r'horse/(\d+)', h_tag['href']).group(1) if h_tag and 'href' in h_tag.attrs else ""
-        return h_name, h_id
-        
-    def _get_horse_sex_and_age(self, soup: BeautifulSoup) -> list:
-        age_td = soup.select_one(SELECTOR_TAG[RaceCol.AGE])
-        if not age_td:
-            age_td = soup.select_one(SELECTOR_TAG_NAR[RaceCol.AGE])
-        return self._split_sex_age(age_td.get_text(strip=True)) if age_td else (None, None)
-        
-    def _get_horse_weight_and_diff(self, soup: BeautifulSoup) -> list:
-        weight_tag = soup.select_one(SELECTOR_TAG[RaceCol.HORSE_WEIGHT]) # 独立したWeightクラス（馬体重用）
-        weight_raw = weight_tag.get_text(strip=True) if weight_tag else ""
-        return self._split_weight(weight_raw)
 
     def parse_race_page(self, html, race_id):
         """
@@ -169,18 +123,8 @@ class DataParser:
         try:
             soup = BeautifulSoup(html, 'html.parser')
         
-            # 馬名の取得
-            name_tag = soup.select_one(".horse_title h1, .db_head_name h1")
-            horse_name = name_tag.get_text(strip=True) if name_tag else "不明"
-
             # 父母馬名の取得
-            sire_dad_name = soup.select_one(".b_ml").get_text(strip=True) if soup.select_one(".b_ml") else "Unknown"
-            sire_mam_name = soup.select_one(".b_fml").get_text(strip=True) if soup.select_one(".b_fml") else "Unknown"
-            sire_names = {
-                RaceCol.HORSE_ID: horse_id,
-                RaceCol.FATHER: sire_dad_name,
-                RaceCol.MOTHER: sire_mam_name,
-            }
+            sire_names = self._get_sire_names(horse_id, soup)
         
             # tableからDataFrameを作成
             dfs = pd.read_html(StringIO(html))
@@ -210,13 +154,9 @@ class DataParser:
                 res_df['種別'] = res_df['距離'].str.extract(r'([ダ芝障])')
                 res_df['距離'] = res_df['距離'].str.extract(r'(\d+)').astype(float)
 
-            # タイムの秒変換
-            #if 'タイム' in res_df.columns:
-            #    res_df['タイム'] = res_df['タイム'].apply(self._time_to_seconds)
-
             # 5. 基本情報の付与
             res_df['馬ID'] = horse_id
-            res_df['馬名'] = horse_name
+            res_df['馬名'] = self._get_elm_by_selector(soup, SELETOR_TAG_HORSE[RaceCol.HORSE_NAME])
 
             # 6. 【重要】カラムの並び替え
             # ユーザー指定の順序: 馬ID, 馬名, 日付, ... 種別, 距離, ...
@@ -295,3 +235,64 @@ class DataParser:
             return sex, age
         except:
             return sex, None
+            
+    def _get_elm_by_selector(self, soup: BeautifulSoup, selector: str) -> str:
+        elm_tag = soup.select_one(selector)
+        return elm_tag.get_text(strip=True) if elm_tag else ""
+
+    def _get_race_name(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_NAME])
+
+    def _get_race_num(self, race_id: str) -> str:
+        return int(race_id[-2:])
+
+    def _get_cond_and_dist(self, soup: BeautifulSoup) -> list:
+        # レース基本情報
+        race_data = self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_DATA])
+        
+        # 距離と種別の抽出 (例: ダ1600m)
+        dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
+        condition = dist_match.group(1) if dist_match else ""
+        distance = dist_match.group(2) if dist_match else ""
+        return condition, distance
+
+    def _get_horse_waku(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
+
+    def _get_horse_umaban(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.HORSE_NUM])
+        
+    def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.WEIGHT_CARRIED])
+
+    def _get_horse_jockey(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.JOCKEY])
+
+    def _get_horse_trainer(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.STABLE])
+
+    def _get_horse_name_and_horse_id(self, soup: BeautifulSoup) -> list:
+        h_tag = soup.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
+        h_name = h_tag.get_text(strip=True) if h_tag else ""
+        h_id = re.search(r'horse/(\d+)', h_tag['href']).group(1) if h_tag and 'href' in h_tag.attrs else ""
+        return h_name, h_id
+        
+    def _get_horse_sex_and_age(self, soup: BeautifulSoup) -> list:
+        age_td = soup.select_one(SELECTOR_TAG[RaceCol.AGE])
+        if not age_td:
+            age_td = soup.select_one(SELECTOR_TAG_NAR[RaceCol.AGE])
+        return self._split_sex_age(age_td.get_text(strip=True)) if age_td else (None, None)
+        
+    def _get_horse_weight_and_diff(self, soup: BeautifulSoup) -> list:
+        weight_tag = soup.select_one(SELECTOR_TAG[RaceCol.HORSE_WEIGHT]) # 独立したWeightクラス（馬体重用）
+        weight_raw = weight_tag.get_text(strip=True) if weight_tag else ""
+        return self._split_weight(weight_raw)
+
+    def _get_sire_names(self, horse_id: str, soup: BeautifulSoup) -> dict:
+        dad_name = self._get_elm_by_selector(soup, SELECTOR_TAG_HORSE[RaceCol.FATHER])
+        mam_name = self._get_elm_by_selector(soup, SELECTOR_TAG_HORSE[RaceCol.MOTHER])
+        return {
+            RaceCol.HORSE_ID: horse_id,
+            RaceCol.FATHER: dad_name if dad_name else "Unknown",
+            RaceCol.MOTHER: mam_name if mam_name else "Unknown",
+        }
