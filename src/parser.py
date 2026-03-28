@@ -145,8 +145,8 @@ class DataParser:
                 res_df['距離'] = res_df['距離'].str.extract(r'(\d+)').astype(float)
 
             # タイムの秒変換
-            if 'タイム' in res_df.columns:
-                res_df['タイム'] = res_df['タイム'].apply(self._time_to_seconds)
+            #if 'タイム' in res_df.columns:
+            #    res_df['タイム'] = res_df['タイム'].apply(self._time_to_seconds)
 
             # 5. 基本情報の付与
             res_df['馬ID'] = horse_id
