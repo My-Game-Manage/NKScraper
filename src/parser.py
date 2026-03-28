@@ -14,7 +14,7 @@ from src.normalizer import DataNormalizer
 SELECTOR_TAG = {
     RaceCol.RACE_DATA: ".RaceData01",
     RaceCol.RACE_NAME: ".RaceName",
-    RaceCol.BRANCKET_NUM: "td[class*='Waku']",
+    RaceCol.BRACKET_NUM: "td[class*='Waku']",
     RaceCol.HORSE_NUM: "td[class*='Umaban']",
     RaceCol.WEIGHT_CARRIED: "td:nth-of-type(6)",
     RaceCol.JOCKEY: ".Jockey a",
