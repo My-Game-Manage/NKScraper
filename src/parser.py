@@ -85,7 +85,7 @@ class DataParser:
                 if not h_tag:
                     continue
                 r_info = self._get_entryhorse_info_from_row(row, race_name, condition, distance, course_name, race_num)
-                self.logger.info(f"r_info: {r_info}")
+                self.logger.debug(f"r_info: {r_info}")
                 if r_info:
                     race_info_list.append(r_info)
                     horse_ids.append(r_info[RaceCol.HORSE_ID])
