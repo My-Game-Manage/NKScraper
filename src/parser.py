@@ -100,7 +100,6 @@ class DataParser:
             # 出馬表の行をループ
             rows = soup.select("tr.HorseList")
             for row in rows:
-                self.logger.info(f"info row: {row}")
                 # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
                 h_tag = row.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
                 if not h_tag:
@@ -186,9 +185,9 @@ class DataParser:
             }
             self.logger.info(f"race_data: {race_data}")
             # 出馬表の行をループ
-            rows = soup.select("table.RaceTable01")
-            self.logger.info(f"result rows: {rows}")
+            rows = soup.select("table.RaceTable01 > tr")
             for row in rows:
+                self.logger.info(f"result row: {row}")
                 # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
                 h_tag = row.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
                 if not h_tag:
