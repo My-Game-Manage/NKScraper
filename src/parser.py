@@ -37,6 +37,7 @@ SELECTOR_TAG_HORSE = {
 SELECTOR_TAG_RESULT = {
     RaceCol.HORSE_NAME: ".Horse_Name a",
     RaceCol.AGE: ".Horse_Info_Detail",
+    RaceCol.HORSE_NUM: "td[class='Num Waku']",
 }
 
 class DataParser:
@@ -258,7 +259,7 @@ class DataParser:
         return {
             RaceCol.RANK: "着順",
             RaceCol.BRACKET_NUM: self._get_horse_waku(row),
-            RaceCol.HORSE_NUM: self._get_horse_waku(row),
+            RaceCol.HORSE_NUM: self._get_horse_waku(row, is_result_page=True),
             RaceCol.HORSE_NAME: h_name,
             RaceCol.SEX: sex,
             RaceCol.AGE: age,
@@ -325,8 +326,8 @@ class DataParser:
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
 
-    def _get_horse_umaban(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.HORSE_NUM])
+    def _get_horse_umaban(self, soup: BeautifulSoup, is_result_page: bool=False) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.HORSE_NUM] if is_result_page else SELECTOR_TAG[RaceCol.HORSE_NUM])
         
     def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.WEIGHT_CARRIED])
