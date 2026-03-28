@@ -153,7 +153,7 @@ class DataParser:
 
             # 5. 基本情報の付与
             res_df['馬ID'] = horse_id
-            res_df['馬名'] = self._get_elm_by_selector(soup, SELETOR_TAG_HORSE[RaceCol.HORSE_NAME])
+            res_df['馬名'] = self._get_elm_by_selector(soup, SELECTOR_TAG_HORSE[RaceCol.HORSE_NAME])
 
             self.logger.debug(f"res_df: {res_df}")
 
