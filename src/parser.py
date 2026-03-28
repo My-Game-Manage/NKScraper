@@ -76,7 +76,7 @@ class DataParser:
 
     def parse_race_page(self, html, race_id):
         """
-        ページから必要な情報を取得する
+        出馬表ページから必要な情報を取得する
         """
         self.logger.info(f"race-id {race_id} into parse_race_page: start processing ...")
         try:
@@ -112,7 +112,7 @@ class DataParser:
 
             return race_info_list, horse_ids
         except Exception as e:
-            print(f"エラーが発生しました: {e}")
+            self.logger.warning(f"エラーが発生しました: {e}")
             return None, None
 
     def parse_horse_history(self, html: str, horse_id: str):
@@ -163,9 +163,43 @@ class DataParser:
             return valid_df, sire_names
 
         except Exception as e:
-            print(f"解析エラー (HorseID: {horse_id}): {e}")
+            self.logger.warning(f"解析エラー (HorseID: {horse_id}): {e}")
             return pd.DataFrame(), sire_names
-
+            
+    def parse_race_result_page(self, html: str, race_id: str) -> list:
+        """
+        レース結果ページから情報取得
+        """
+        self.logger.info(f"race-id {race_id} into parse_race_result_page: start processing ...")
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
+            # 種別、距離
+            condition, distance = self._get_cond_and_dist(soup)
+            # レース情報
+            race_data = {
+                RaceCol.RACE_NAME: self._get_race_name(soup),     # レース名
+                RaceCol.SURFACE: condition,                       # 馬場
+                RaceCol.DISTANCE: distance,                       # 距離
+                RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
+                RaceCol.RACE_NUMBER: self._get_race_num(race_id), # レース番号
+            }
+            self.logger.debug(f"race_data: {race_data}")
+            # 出馬表の行をループ
+            rows = soup.select("tr.HorseList")
+            for row in rows:
+                # 【重要】馬名リンクがない行は馬のデータではないのでスキップ
+                h_tag = row.select_one(SELECTOR_TAG[RaceCol.HORSE_NAME])
+                if not h_tag:
+                    continue
+                result = self._get_entryhorse_result_from_row(row)
+                self.logger.info(f"result: {result}")
+                if result:
+                    race_info_list.append(race_data | result)
+            return []
+        except Exception as e:
+            self.logger.warning(f"エラーが発生しました: {e}")
+            return None, None
+        
     def _get_entryhorse_info_from_row(self, row: BeautifulSoup) -> dict:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
@@ -195,7 +229,43 @@ class DataParser:
             RaceCol.WEIGHT_DIFF: weight_diff,
             RaceCol.HORSE_ID: h_id,
         }
+
+    def _get_entryhorse_result_from_row(self, row: BeautifulSoup) -> dict:
+        """
+        テーブルから出走馬の結果情報を取得し、辞書にして返す
+        """
+        self.logger.debug(f"get_entryhorse_result_from_row: start processing ...")
         
+        # 馬名・ID
+        h_name, h_id = self._get_horse_name_and_horse_id(row)
+        
+        # 性齢：class="Age" を使用／中央はclass="Barei"を使用
+        sex, age = self._get_horse_sex_and_age(row)            
+        
+        # 馬体重の分離
+        weight, weight_diff = self._get_horse_weight_and_diff(row)
+        
+        return {
+            RaceCol.RANK: "着順",
+            RaceCol.BRACKET_NUM: self._get_horse_waku(row),
+            RaceCol.HORSE_NUM: self._get_horse_umaban(row),
+            RaceCol.HORSE_NAME: h_name,
+            RaceCol.SEX: sex,
+            RaceCol.AGE: age,
+            RaceCol.WEIGHT_CARRIED: self._get_horse_kinryo(row),
+            RaceCol.JOCKEY: self._get_horse_jockey(row),
+            RaceCol.TIME: "タイム",
+            RaceCol.RANK_DIFF: "着差",
+            RaceCol.POPULAR: "人気",
+            RaceCol.ODDS: "オッズ",
+            RaceCol.LAST_3F: "上り",
+            RaceCol.PASS: "通過順",
+            RaceCol.STABLE: self._get_horse_trainer(row),
+            RaceCol.HORSE_WEIGHT: weight,
+            RaceCol.WEIGHT_DIFF: weight_diff,
+            RaceCol.HORSE_ID: h_id,
+        }
+                
     def _split_weight(self, weight_str):
         """'518(0)' -> 518, 0 / '496(-1)' -> 496, -1"""
         if not weight_str or weight_str == "計不" or weight_str == "**":
