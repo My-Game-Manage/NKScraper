@@ -187,7 +187,7 @@ class RaceDataCollector:
         """
         result_list = []
         for r_id in race_ids:
-            result = []
+            result = self._collect_result_at(r_id)
             if result:
                 result_list.append(result)
         return result_list
@@ -200,6 +200,15 @@ class RaceDataCollector:
         html = self.client.get_html(url)
         race_info, horse_ids = self.parser.parse_race_page(html, race_id)
         return race_info, horse_ids
+
+    def _collect_result_at(self, race_id):
+        """
+        特定の1レースに関する結果情報を取得
+        """
+        url = get_race_url(race_id, NetkeibaPageType.RESULT)
+        html = self.client.get_html(url)
+        result_info = self.parser.parse_race_result(html, race_id)
+        return result_info
 
     def _save_to_csv(self, data_df: pd.DataFrame, date_str: str, data_type: DataType):
         """
