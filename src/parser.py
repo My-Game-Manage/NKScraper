@@ -76,6 +76,15 @@ class DataParser:
 
             race_info_list = []
             horse_ids = []
+
+            # 固定部分をまとめる
+            fixed_data = {
+                RaceCol.RACE_NAME: race_name,
+                RaceCol.SURFACE: condition,
+                RaceCol.DISTANCE: distance,
+                RaceCol.COURSE: course_name,
+                RaceCol.RACE_NUMBER: race_num,
+            }
         
             # 出馬表の行をループ
             rows = soup.select("tr.HorseList")
@@ -84,7 +93,7 @@ class DataParser:
                 h_tag = row.select_one(".HorseName a")
                 if not h_tag:
                     continue
-                r_info = self._get_entryhorse_info_from_row(row, race_name, condition, distance, course_name, race_num)
+                r_info = self._get_entryhorse_info_from_row(row, fixed_data)
                 self.logger.debug(f"r_info: {r_info}")
                 if r_info:
                     race_info_list.append(r_info)
@@ -174,7 +183,7 @@ class DataParser:
             print(f"解析エラー (HorseID: {horse_id}): {e}")
             return pd.DataFrame(), sire_names
 
-    def _get_entryhorse_info_from_row(self, row: list, race_name, condition, distance, course_name, race_num) -> dict:
+    def _get_entryhorse_info_from_row(self, row: list, fixed_data: dict) -> dict:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
         """
@@ -211,11 +220,11 @@ class DataParser:
         weight, weight_diff = self._split_weight(weight_raw)
 
         return {
-            RaceCol.COURSE: course_name,
-            RaceCol.RACE_NUMBER: race_num,
-            RaceCol.RACE_NAME: race_name,
-            RaceCol.SURFACE: condition,
-            RaceCol.DISTANCE: distance,
+            RaceCol.COURSE: fixed_data[RaceCol.COURSE],
+            RaceCol.RACE_NUMBER: fixed_data[RaceCol.RACE_NUMBER],
+            RaceCol.RACE_NAME: fixed_data[RaceCol.RACE_NAME],
+            RaceCol.SURFACE: fixed_data[RaceCol.SURFACE],
+            RaceCol.DISTANCE: fixed_data[RaceCol.DISTANCE],
             RaceCol.BRACKET_NUM: waku,
             RaceCol.HORSE_NUM: umaban,
             RaceCol.HORSE_NAME: h_name,
