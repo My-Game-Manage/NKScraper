@@ -90,6 +90,76 @@ class DataParser:
             print(f"エラーが発生しました: {e}")
             return None, None
 
+    def parse_horse_hisotry():
+        """
+        馬の過去レースデータを取得する
+        """
+        soup = BeautifulSoup(html, 'html.parser')
+        
+        # 馬名の取得
+        name_tag = soup.select_one(".horse_title h1, .db_head_name h1")
+        horse_name = name_tag.get_text(strip=True) if name_tag else "不明"
+
+        # 父母馬名の取得
+        sire_dad_name = soup.select_one(".b_ml").get_text(strip=True) if soup.select_one(".b_ml") else "Unknown"
+        sire_mam_name = soup.select_one(".b_fml").get_text(strip=True) if soup.select_one(".b_fml") else "Unknown"
+        sire_names = [sire_dad_name, sire_mam_name]
+        
+        try:
+            # tableからDataFrameを作成
+            dfs = pd.read_html(StringIO(html))
+            res_df = pd.DataFrame()
+            for df in dfs:
+                if '日付' in df.columns:
+                    res_df = df.copy()
+                    break
+            
+            if res_df.empty:
+                return res_df, sire_names
+
+            # 1. カラム名のクリーニング（スペース除去）
+            res_df.columns = [c.replace(' ', '').replace('　', '') for c in res_df.columns]
+            
+            # 2. 全要素のクリーニング（Pandas 2.1.0+ 対応の map を使用）
+            res_df = res_df.map(lambda x: x.strip().replace(' ', '').replace('　', '') if isinstance(x, str) else x)
+
+            # 3. 馬体重の分割
+            if '馬体重' in res_df.columns:
+                res_df[['体重', '体重増減']] = res_df['馬体重'].apply(
+                    lambda x: pd.Series(self._split_weight(x))
+                )
+
+            # 4. 距離の数値化と種別の分離
+            if '距離' in res_df.columns:
+                res_df['種別'] = res_df['距離'].str.extract(r'([ダ芝障])')
+                res_df['距離'] = res_df['距離'].str.extract(r'(\d+)').astype(float)
+
+            # タイムの秒変換
+            if 'タイム' in res_df.columns:
+                res_df['タイム'] = res_df['タイム'].apply(self._time_to_seconds)
+
+            # 5. 基本情報の付与
+            res_df['馬ID'] = horse_id
+            res_df['馬名'] = horse_name
+
+            # 6. 【重要】カラムの並び替え
+            # ユーザー指定の順序: 馬ID, 馬名, 日付, ... 種別, 距離, ...
+            ordered_cols = [
+                '馬ID', '馬名', '日付', '開催', '天気', 'R', 'レース名', '頭数', '枠番', '馬番',
+                'オッズ', '人気', '着順', '騎手', '斤量', '種別', '距離', '馬場',
+                'タイム', '着差', '通過', '上り', '体重', '体重増減', '勝ち馬(2着馬)', '賞金'
+            ]
+            
+            # 存在するカラムのみで再構成
+            final_cols = [c for c in ordered_cols if c in res_df.columns]
+            res_df = res_df[final_cols]
+
+            return res_df, sire_names
+
+        except Exception as e:
+            print(f"解析エラー (HorseID: {horse_id}): {e}")
+            return pd.DataFrame(), sire_names
+
     def _get_entryhorse_info_from_row(self, row: list, race_name, condition, distance, course_name, race_num) -> dict:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
