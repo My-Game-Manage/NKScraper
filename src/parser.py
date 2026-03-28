@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from src.utils.logger import setup_logger
 from src.constants.schema import RaceCol
 from src.utils.helpers import get_jyo_name
-
+from src.normalizer import DataNormalizer
 
 class DataParser:
     """
@@ -21,6 +21,8 @@ class DataParser:
         self.logger = setup_logger(_CLASSNAME)
 
         self.logger.info("初期化しています...")
+
+        self.normalizer = DataNormalizer()
         
     def extract_race_ids(self, html_content: str) -> list:
         """
@@ -108,7 +110,11 @@ class DataParser:
             # 父母馬名の取得
             sire_dad_name = soup.select_one(".b_ml").get_text(strip=True) if soup.select_one(".b_ml") else "Unknown"
             sire_mam_name = soup.select_one(".b_fml").get_text(strip=True) if soup.select_one(".b_fml") else "Unknown"
-            sire_names = [sire_dad_name, sire_mam_name]
+            sire_names = {
+                RaceCol.HORSE_ID: horse_id,
+                RaceCol.FATHER: sire_dad_name,
+                RaceCol.MOTHER: sire_mam_name,
+            }
         
             # tableからDataFrameを作成
             dfs = pd.read_html(StringIO(html))
@@ -158,7 +164,10 @@ class DataParser:
             final_cols = [c for c in ordered_cols if c in res_df.columns]
             res_df = res_df[final_cols]
 
-            return res_df, sire_names
+            # カラムの正規化
+            valid_df = self.normalizer.normalize_columns(res_df)
+
+            return valid_df, sire_names
 
         except Exception as e:
             print(f"解析エラー (HorseID: {horse_id}): {e}")
