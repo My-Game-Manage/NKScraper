@@ -155,20 +155,9 @@ class DataParser:
             res_df['馬ID'] = horse_id
             res_df['馬名'] = self._get_elm_by_selector(soup, SELETOR_TAG_HORSE[RaceCol.HORSE_NAME])
 
-            # 6. 【重要】カラムの並び替え
-            # ユーザー指定の順序: 馬ID, 馬名, 日付, ... 種別, 距離, ...
-            ordered_cols = [
-                '馬ID', '馬名', '日付', '開催', '天気', 'R', 'レース名', '頭数', '枠番', '馬番',
-                'オッズ', '人気', '着順', '騎手', '斤量', '種別', '距離', '馬場',
-                'タイム', '着差', '通過', '上り', '体重', '体重増減', '勝ち馬(2着馬)', '賞金'
-            ]
-            
-            # 存在するカラムのみで再構成
-            final_cols = [c for c in ordered_cols if c in res_df.columns]
-            res_df = res_df[final_cols]
             self.logger.debug(f"res_df: {res_df}")
 
-            # カラムの正規化
+            # 6. カラムの正規化（並び替えも込み）
             valid_df = self.normalizer.normalize_columns(res_df)
 
             return valid_df, sire_names
