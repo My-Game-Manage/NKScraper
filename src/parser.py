@@ -44,7 +44,7 @@ SELECTOR_TAG_RESULT = {
     RaceCol.TIME: ".Time",
     RaceCol.MARGIN: ".RaceTime",
     RaceCol.POPULARITY: ".OddsPeople",
-    RaceCol.ODDS: ".Odds Txt_R",
+    RaceCol.ODDS: "td[class='Odds Txt_R']",
     RaceCol.PASSING_ORDER: ".PassageRate",
     RaceCol.LAST_3F: ".Time",
 }
