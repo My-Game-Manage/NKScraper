@@ -92,9 +92,9 @@ class DataNormalizer:
         '20260320'のような日付を'2026/03/20'に変換して上書き
         """
         # 日付カラムが存在する場合のみ実行
-    if RaceCol.DATE in df.columns:
-        df[RaceCol.DATE] = df[RaceCol.DATE].apply(format_date_strict)
-    return df
+        if RaceCol.DATE in df.columns:
+            df[RaceCol.DATE] = df[RaceCol.DATE].apply(format_date_strict)
+        return df
 
     @staticmethod
     def ensure_dataframe(data) -> pd.DataFrame:
