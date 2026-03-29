@@ -255,6 +255,7 @@ class DataParser:
         
         # 馬番取得
         horse_num = self._get_horse_umaban(row, is_nar, is_result_page=True)
+        self.logger.info(f"horse_num: {horse_num}")
         
         # 性齢：class="Age" を使用／中央はclass="Barei"を使用
         sex, age = self._get_horse_sex_and_age(row, is_result_page=True)            
