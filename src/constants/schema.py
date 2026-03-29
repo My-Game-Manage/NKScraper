@@ -7,6 +7,8 @@ class NetkeibaPageType:
     # ページの分類
     SHUTUBA = 'shutuba'
     RESULT = 'result'
+    HORSE = 'horse'
+    JOCKEY = 'jockey'
     ODDS = 'odds'
 
 class RaceCol:
