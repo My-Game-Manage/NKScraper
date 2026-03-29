@@ -429,7 +429,7 @@ class DataParser:
             return pass_map
         except Exception as e:
             self.logger.warning(f"コーナー通過順の解析エラー: {e}")
-            return None
+            return {}
 
     def _get_horse_name_and_horse_id(self, soup: BeautifulSoup, is_result_page: bool=False) -> list:
         h_tag = soup.select_one(SELECTOR_TAG_RESULT[RaceCol.HORSE_NAME] if is_result_page else SELECTOR_TAG[RaceCol.HORSE_NAME])
