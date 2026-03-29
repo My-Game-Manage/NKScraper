@@ -403,19 +403,19 @@ class DataParser:
             for row in corner_rows:
                 th = row.find('th')
                 td = row.find('td')
-                self.logger.info(f"th:{th}")
-                self.logger.info(f"td:{td}")
-                raw_text = row.get_attribute('textContent').strip()
-                if not raw_text: continue
-
+                th_text = th.get_text(strip=True) if td else ""
+                td_text = td.get_text(strip=True) if td else ""
+                if not th or not td:
+                    continue
+                
                 # 1. 「コーナー」という文字で分割して、右側の馬番リストを取得
-                if 'コーナー' in raw_text:
+                if 'コーナー' in th_text:
                     # 右側だけを取り出し、改行や余計な空白をすべて削除
-                    order_raw = raw_text.split('コーナー')[1].strip().replace('\n', '').replace('\r', '')
+                    order_raw = th_text.split('コーナー')[1].strip().replace('\n', '').replace('\r', '')
                     self.logger.info(f"order_raw: {order_raw}")
 
                     # 2. カッコ「()」をカンマ「,」に置換して、すべてカンマ区切りのリストにする
-                    order_processed = order_raw.replace('(', ',').replace(')', ',')
+                    order_processed = td_text.replace('(', ',').replace(')', ',')
                     # カンマで分割し、空要素を除去して純粋な馬番だけのリストにする
                     order_list = [h.strip() for h in order_processed.split(',') if h.strip()]
                     self.logger.info(f"order_list: {order_list}")
