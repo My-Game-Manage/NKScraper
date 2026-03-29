@@ -348,6 +348,9 @@ class DataParser:
     def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.WEIGHT_CARRIED])
 
+    def _get_horse_margin(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.MARGIN])
+
     def _get_horse_jockey(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.JOCKEY])
 
