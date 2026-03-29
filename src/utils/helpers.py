@@ -176,3 +176,15 @@ def extract_num_horses(data_list):
             num_str = re.sub(r'\D', '', item)
             return int(num_str) if num_str else None
     return None
+    
+def extract_num_horses_flexible(data_list):
+    """
+    リストの各要素から「数字+頭」というパターンを探し、その数字部分を抽出する
+    """
+    for item in data_list:
+        # 「1つ以上の数字」＋「頭」というパターンを検索
+        match = re.search(r'(\d+)頭', item)
+        if match:
+            # マッチした部分の最初のグループ（数字部分）を返す
+            return int(match.group(1))
+    return None
