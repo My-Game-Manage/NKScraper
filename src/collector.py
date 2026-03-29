@@ -89,14 +89,15 @@ class RaceDataCollector:
             
         # 3. CSVとして保存
         if race_info_list:
-            self._save_to_csv(self.normalizer.ensure_dataframe(race_info_list), det_target_date, NetkeibaPageType.SHUTUBA)
+            df = self.normalizer.ensure_dataframe(race_info_list)
+            self._save_to_csv(self.normalizer.normalize_columns(df, NetkeibaPageType.SHUTUBA), det_target_date, NetkeibaPageType.SHUTUBA)
             self.logger.info(f"race_info_listを保存しました")
         if horse_info_list:
             self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), det_target_date, NetkeibaPageType.HORSE)
             self.logger.info(f"horse_info_listを保存しました")
         if race_result_list:
-            self.logger.debug(f"result_list: {race_result_list}")
-            self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), det_target_date, NetkeibaPageType.RESULT)
+            df = self.normalizer.ensure_dataframe(race_result_list)
+            self._save_to_csv(self.normalizer.normalize_columns(df, NetkeibaPageType.RESULT), det_target_date, NetkeibaPageType.RESULT)
             self.logger.info(f"race_result_listを保存しました")
 
         self.logger.info("取得と保存が終了しました")
