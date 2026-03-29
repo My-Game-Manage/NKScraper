@@ -96,7 +96,7 @@ class DataParser:
             soup = BeautifulSoup(html, 'html.parser')
             
             # レース情報
-            race_data = self._get_race_data(date, soup)
+            race_data = self._get_race_data(date, race_id, soup)
             self.logger.info(f"race_data: {race_data}")
 
             race_info_list = []
@@ -180,7 +180,7 @@ class DataParser:
             soup = BeautifulSoup(html, 'html.parser')
             
             # レース情報
-            race_data = self._get_race_data(date, soup)
+            race_data = self._get_race_data(date, race_id, soup)
             self.logger.info(f"race_data: {race_data}")
 
             race_result_list = []
@@ -303,7 +303,7 @@ class DataParser:
     def _get_race_num(self, race_id: str) -> str:
         return int(race_id[-2:])
 
-    def _get_race_data(self, date: str, soup: BeautifulSoup) -> dict:
+    def _get_race_data(self, date: str, race_id: str, soup: BeautifulSoup) -> dict:
         """
         レースの基本情報取得
         """
