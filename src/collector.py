@@ -146,10 +146,10 @@ class RaceDataCollector:
         # コースでフィルタリング
         if course_codes:
             filtered_ids = filter_race_ids_by_course(filtered_ids, course_codes)
-            self.logger.info(f"course_codes filtering >>>: {len(filtered_ids)}")
+            self.logger.info(f"course_codes filtering >>>: {len(filtered_ids)}\n{filtered_ids}")
         if race_nums:
             filtered_ids = filter_race_ids_by_number(filtered_ids, race_nums)
-            self.logger.info(f"race_nums filtering >>>: {len(filtered_ids)}")
+            self.logger.debug(f"race_nums filtering >>>: {len(filtered_ids)}")
         return filtered_ids
 
     def _get_race_infos_from_ids(self, date: str, race_ids: list):
