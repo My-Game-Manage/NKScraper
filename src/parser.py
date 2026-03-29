@@ -398,6 +398,7 @@ class DataParser:
             # 指定されたクラスの行をすべて取得
             corner_rows = soup.select(".RaceCommon_Table.Corner_Num tr")
             temp_pass_data = {}
+            self.logger.info(f"通過順： {corner_rows}")
 
             for row in corner_rows:
                 raw_text = row.get_attribute('textContent').strip()
