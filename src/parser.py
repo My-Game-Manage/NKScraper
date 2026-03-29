@@ -317,7 +317,7 @@ class DataParser:
             RaceCol.SURFACE: surface,                         # 種別
             RaceCol.DISTANCE: distance,                       # 距離
             RaceCol.TRACK_CONDITION: condition,               # 馬場
-            RaceCol.NUM_HORSE: num_horse,                     # 頭数
+            RaceCol.NUM_HORSES: num_horse,                     # 頭数
         }
 
     def _get_distance_and_condition(self, soup: BeautifulSoup) -> list:
