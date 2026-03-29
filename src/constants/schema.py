@@ -76,7 +76,7 @@ class RaceCol:
         POPULARITY: "人気",
         RANK: "着順",
         STABLE: "厩舎",
-        HORSE_WEIGHT: "馬体重",
+        HORSE_WEIGHT: "体重",
         WEIGHT_DIFF: "体重増減",
         WINNER_NAME: "勝ち馬",
         PRIZE: "賞金",
