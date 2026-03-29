@@ -158,7 +158,23 @@ def override_race_info_parents_name(race_info_list: list, sire_names_list: list)
             item_a[RaceCol.FATHER] = sire_map[target_id].get(RaceCol.FATHER, item_a[RaceCol.FATHER])
             item_a[RaceCol.MOTHER] = sire_map[target_id].get(RaceCol.MOTHER, item_a[RaceCol.MOTHER])
     return race_info_list
-
+    
+def get_num_horses_from_text(text: str):
+    """
+    テキストを空白で分割し、その中から「〇〇頭」の数字部分のみを抽出する
+    """
+    # 1. 空白（全角・半角・改行等）で分割してリスト化
+    # split()に引数を渡さないことで、連続する空白も綺麗に処理できます
+    elements = text.split()
+    
+    # 2. リストの各要素から「数字+頭」のパターンを探す
+    for item in elements:
+        match = re.search(r'(\d+)頭', item)
+        if match:
+            # 「C310頭」のような場合でも、頭の直前の数字だけを取得
+            return int(match.group(1))
+            
+    return None
 def split_race_info(text: str) -> list:
     """
     文字列を空白（全角・半角問わず）で区切ってリストで取得する
