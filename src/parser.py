@@ -355,11 +355,11 @@ class DataParser:
         cond_match = re.search(r'(馬場:)(良|稍|重|不)', race_data)
         condition = cond_match.group(2) if cond_match else ""
         # 頭数
-        race_data2 = self._get_elm_by_selector(soup, SELECTOR_TAG_RACEDATA2)
-        self.logger.debug(f"race_data content: {race_data}")
+        race_data2 = soup.select_one(SELECTOR_TAG_RACEDATA2)
+        text = race_data2.get_text()
         #num_match = re.search(r'(\d+)(頭)', race_data2)
         #num_horse = num_match.group(1) if num_match else ""
-        t = split_race_info(race_data2)
+        t = split_race_info(text)
         num_horse = extract_num_horses_flexible(t)
         self.logger.info(f"num_horse: {num_horse}")
         return surface, distance, weather, condition, num_horse
