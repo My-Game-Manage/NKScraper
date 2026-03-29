@@ -67,7 +67,7 @@ def get_top_page_url(target_date: str, is_nar: bool = True) -> str:
     日付から開催トップページのURLを生成する
     """
     domain = get_netkeiba_domain_by_is_nar(is_nar)
-    return f"https://{domain}.netkeiba.com/top/?kaisai_date={target_date}"
+    return f"https://{domain}.netkeiba.com/top/race_list.html?kaisai_date={target_date}"
 
 def get_jyo_name(kaisai_id: str) -> str:
     """10桁または12桁のIDから会場名を特定"""
