@@ -44,7 +44,7 @@ SELECTOR_TAG_RESULT = {
     RaceCol.TIME: ".Time",
     RaceCol.MARGIN: ".RaceTime",
     RaceCol.POPULARITY: ".OddsPeople",
-    RaceCol.WIN_ODDS: ".Odds_Ninki",
+    RaceCol.ODDS: ".Odds",
     RaceCol.PASSING_ORDER: ".PassageRate",
     RaceCol.LAST_3F: ".Time",
 }
@@ -371,7 +371,7 @@ class DataParser:
         return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.POPULARITY])
         
     def _get_horse_odds(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.WIN_ODDS])
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.ODDS])
         
     def _get_horse_last3f(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.LAST_3F])
