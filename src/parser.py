@@ -12,7 +12,7 @@ from src.utils.helpers import get_jyo_name
 from src.normalizer import DataNormalizer
 
 SELECTOR_TAG = {
-    RaceCol.RACE_DATA: ".RaceData01, .RaceData02",
+    RaceCol.RACE_DATA: ".RaceData01",
     RaceCol.RACE_NAME: ".RaceName",
     RaceCol.BRACKET_NUM: "td[class*='Waku']",
     RaceCol.HORSE_NUM: "td[class*='Umaban']",
@@ -23,6 +23,8 @@ SELECTOR_TAG = {
     RaceCol.AGE: ".Age",
     RaceCol.HORSE_WEIGHT: ".Weight",
 }
+
+SELECTOR_TAG_RACEDATA2 = ".RaceData02"
 
 SELECTOR_TAG_NAR = {
     RaceCol.AGE: ".Barei",
@@ -256,7 +258,7 @@ class DataParser:
             RaceCol.WEIGHT_CARRIED: self._get_horse_kinryo(row),
             RaceCol.JOCKEY: self._get_horse_jockey(row),
             RaceCol.TIME: self._get_horse_time(row),
-            RaceCol.MARGIN: self._get_horse_margin(row),
+            RaceCol.MARGIN: self._get_horse_time_margin(row),
             RaceCol.POPULARITY: self._get_horse_popularity(row),
             RaceCol.WIN_ODDS: self._get_horse_odds(row),
             RaceCol.LAST_3F: self._get_horse_last3f(row),
@@ -323,7 +325,6 @@ class DataParser:
     def _get_distance_and_condition(self, soup: BeautifulSoup) -> list:
         # レース基本情報
         race_data = self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_DATA])
-        self.logger.info(f"race_data content: {race_data}")
         
         # 距離と種別の抽出 (例: ダ1600m)
         dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
@@ -336,7 +337,9 @@ class DataParser:
         cond_match = re.search(r'(馬場:)(良|稍|重|不)', race_data)
         condition = cond_match.group(2) if cond_match else ""
         # 頭数
-        num_match = re.search(r'(\d+)(頭)', race_data)
+        race_data2 = self._get_elm_by_selector(soup, SELECTOR_TAG_RACEDATA2)
+        self.logger.info(f"race_data content: {race_data}")
+        num_match = re.search(r'(\d+)(頭)', race_data2)
         num_horse = num_match.group(1) if num_match else ""
         return surface, distance, weather, condition, num_horse
 
@@ -348,9 +351,6 @@ class DataParser:
         
     def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.WEIGHT_CARRIED])
-
-    def _get_horse_margin(self, soup: BeautifulSoup) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.MARGIN])
 
     def _get_horse_jockey(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.JOCKEY])
