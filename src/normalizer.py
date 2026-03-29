@@ -1,8 +1,77 @@
 # 正規化用
 
 import pandas as pd
-from src.constants.schema import RaceCol
+
+from src.constants.schema import RaceCol, NetkeibaPageType
 from src.utils.date_utils import time_to_seconds, format_date_strict
+
+SAVE_COLUMNS_ORDER = {
+    NetkeibaPageType.SHUTUBA: [
+        RaceCol.DATE,             # date
+        RaceCol.COURSE,           # course
+        RaceCol.WEATHER,          # weather
+        RaceCol.RACE_NUMBER,      # race_number
+        RaceCol.RACE_NAME,        # race_name
+        RaceCol.SURFACE,          # surface
+        RaceCol.DISTANCE,         # distance
+        RaceCol.TRACK_CONDITION,  # track_condition
+        RaceCol.NUM_HORSES,       # num_horses
+        RaceCol.BRACKET_NUM,      # bracket_number
+        RaceCol.HORSE_NUM,        # horse_number
+        RaceCol.HORSE_NAME,       # horse_name
+        RaceCol.FATHER,           # father_name
+        RaceCol.MOTHER,           # mother_name
+        RaceCol.SEX,              # sex
+        RaceCol.AGE,              # age
+        RaceCol.WEIGHT_CARRIED,   # weight_carried
+        RaceCol.JOCKEY,           # jockey
+        RaceCol.STABLE,           # stable
+        RaceCol.HORSE_WEIGHT,     # horse_weight
+        RaceCol.WEIGHT_DIFF,      # weight_diff
+        RaceCol.HORSE_ID          # horse_id
+    ],
+    NetkeibaPageType.HORSE: [
+        # '馬ID', '馬名', '日付', '開催', '天気', 'R', 'レース名', '頭数', '枠番', '馬番',
+        # 'オッズ', '人気', '着順', '騎手', '斤量', '種別', '距離', '馬場',
+        # 'タイム', '着差', '通過', '上り', '体重', '体重増減', '勝ち馬(2着馬)', '賞金'
+        RaceCol.HORSE_ID, RaceCol.HORSE_NAME, RaceCol.DATE, RaceCol.COURSE, 
+        RaceCol.WEATHER, RaceCol.RACE_NUMBER, RaceCol.RACE_NAME, RaceCol.NUM_HORSES, 
+        RaceCol.BRACKET_NUM, RaceCol.HORSE_NUM, RaceCol.ODDS, RaceCol.POPULARITY, 
+        RaceCol.RANK, RaceCol.JOCKEY, RaceCol.WEIGHT_CARRIED, RaceCol.SURFACE, 
+        RaceCol.DISTANCE, RaceCol.TRACK_CONDITION, RaceCol.TIME, RaceCol.MARGIN, 
+        RaceCol.PASSING_ORDER, RaceCol.LAST_3F, RaceCol.HORSE_WEIGHT, 
+        RaceCol.WEIGHT_DIFF, RaceCol.WINNER_NAME, RaceCol.PRIZE
+    ],
+    NetkeibaPageType.RESULT: [
+        RaceCol.DATE,             # date
+        RaceCol.COURSE,           # course
+        RaceCol.WEATHER,          # weather
+        RaceCol.RACE_NUMBER,      # race_number
+        RaceCol.RACE_NAME,        # race_name
+        RaceCol.SURFACE,          # surface
+        RaceCol.DISTANCE,         # distance
+        RaceCol.TRACK_CONDITION,  # track_condition
+        RaceCol.NUM_HORSES,       # num_horses
+        RaceCol.RANK,             # rank
+        RaceCol.BRACKET_NUM,      # bracket_number
+        RaceCol.HORSE_NUM,        # horse_number
+        RaceCol.HORSE_NAME,       # horse_name
+        RaceCol.SEX,              # sex
+        RaceCol.AGE,              # age
+        RaceCol.WEIGHT_CARRIED,   # weight_carried
+        RaceCol.JOCKEY,           # jockey
+        RaceCol.TIME,             # time
+        RaceCol.MARGIN,           # margin
+        RaceCol.POPULARITY,       # popularity
+        RaceCol.ODDS,             # odds
+        RaceCol.LAST_3F,          # last_3f
+        RaceCol.PASSING_ORDER,    # passing_order
+        RaceCol.STABLE,           # stable
+        RaceCol.HORSE_WEIGHT,     # horse_weight
+        RaceCol.WEIGHT_DIFF,      # weight_diff
+        RaceCol.HORSE_ID          # horse_id
+    ],
+}
 
 class DataNormalizer:
     @staticmethod
@@ -60,7 +129,7 @@ class DataNormalizer:
         return df
 
     @staticmethod
-    def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    def normalize_columns(df: pd.DataFrame, data_type: NetkeibaPageType) -> pd.DataFrame:
         """
         日本語カラム名を schema.py の定義に基づき英語に変換し、順序を整える
         """
@@ -91,20 +160,7 @@ class DataNormalizer:
 
         # 5. 変換後の英語名で、推奨される列順序を定義
         # (RaceCol の定数を使うことで、タイポを防ぎます)
-        # ordered_cols = [
-        #        '馬ID', '馬名', '日付', '開催', '天気', 'R', 'レース名', '頭数', '枠番', '馬番',
-        #        'オッズ', '人気', '着順', '騎手', '斤量', '種別', '距離', '馬場',
-        #        'タイム', '着差', '通過', '上り', '体重', '体重増減', '勝ち馬(2着馬)', '賞金'
-        #    ]
-        target_order = [
-            RaceCol.HORSE_ID, RaceCol.HORSE_NAME, RaceCol.DATE, RaceCol.COURSE, 
-            RaceCol.WEATHER, RaceCol.RACE_NUMBER, RaceCol.RACE_NAME, RaceCol.NUM_HORSES, 
-            RaceCol.BRACKET_NUM, RaceCol.HORSE_NUM, RaceCol.ODDS, RaceCol.POPULARITY, 
-            RaceCol.RANK, RaceCol.JOCKEY, RaceCol.WEIGHT_CARRIED, RaceCol.SURFACE, 
-            RaceCol.DISTANCE, RaceCol.TRACK_CONDITION, RaceCol.TIME, RaceCol.MARGIN, 
-            RaceCol.PASSING_ORDER, RaceCol.LAST_3F, RaceCol.HORSE_WEIGHT, 
-            RaceCol.WEIGHT_DIFF, RaceCol.WINNER_NAME, RaceCol.PRIZE
-        ]
+        target_order = SAVE_COLUMNS_ORDER.get(data_type, NetkeibaPageType.SHUTUBA)
 
         # 存在するカラムのみで順序を整える（存在しない列があってもエラーにならないようにする）
         existing_cols = [c for c in target_order if c in df.columns]
