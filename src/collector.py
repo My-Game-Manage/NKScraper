@@ -142,6 +142,7 @@ class RaceDataCollector:
         """
         # 帯広と不明は除外
         filtered_ids = filter_race_ids_exclude_course(kaisai_ids)
+        self.logger.info(f"開催場所：{course_codes}")
         # コースでフィルタリング
         if course_codes:
             filtered_ids = filter_race_ids_by_course(filtered_ids, course_codes)
