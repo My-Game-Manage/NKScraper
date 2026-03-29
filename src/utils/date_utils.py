@@ -48,5 +48,5 @@ def format_date_strict(date_val) -> str:
         return date_val
 
     # 文字列を一度日付オブジェクトに変換してから再フォーマット
-    dt = datetime.strptime(date_str, "%Y%m%d")
+    dt = datetime.strptime(date_val, "%Y%m%d")
     return dt.strftime("%Y/%m/%d")
