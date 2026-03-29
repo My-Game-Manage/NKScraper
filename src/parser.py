@@ -359,7 +359,9 @@ class DataParser:
         self.logger.debug(f"race_data content: {race_data}")
         #num_match = re.search(r'(\d+)(頭)', race_data2)
         #num_horse = num_match.group(1) if num_match else ""
-        num_horse = extract_num_horses(split_race_info(race_data2))
+        t = split_race_info(race_data2)
+        self.logger.info(f"馬の頭数のため：{t}")
+        num_horse = extract_num_horses(t)
         return surface, distance, weather, condition, num_horse
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
