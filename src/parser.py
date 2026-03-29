@@ -7,7 +7,7 @@ from io import StringIO
 from bs4 import BeautifulSoup
 
 from src.utils.logger import setup_logger
-from src.constants.schema import RaceCol
+from src.constants.schema import RaceCol, NetkeibaPageType
 from src.utils.helpers import get_jyo_name, is_nar_id
 from src.normalizer import DataNormalizer
 
@@ -169,7 +169,7 @@ class DataParser:
             self.logger.debug(f"res_df: {res_df}")
 
             # 6. カラムの正規化（並び替えも込み）
-            valid_df = self.normalizer.normalize_columns(res_df)
+            valid_df = self.normalizer.normalize_columns(res_df, NetkeibaPageType.HORSE)
 
             return valid_df, sire_names
 
