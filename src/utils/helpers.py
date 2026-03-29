@@ -179,12 +179,15 @@ def extract_num_horses(data_list):
     
 def extract_num_horses_flexible(data_list):
     """
-    リストの各要素から「数字+頭」というパターンを探し、その数字部分を抽出する
+    リストの各要素から「（数字）頭」というパターンを探し、
+    「頭」の直前にある数字だけを抽出する
     """
     for item in data_list:
-        # 「1つ以上の数字」＋「頭」というパターンを検索
+        # \d+? は「頭」の直前にある数字だけにマッチするようにします
+        # または (\d{1,2})頭 とすることで、頭数の範囲（1〜2桁）を限定できます
         match = re.search(r'(\d+)頭', item)
         if match:
-            # マッチした部分の最初のグループ（数字部分）を返す
+            # itemが「C310頭」の場合、match.group(1) は「10」になります
+            # （正規表現はデフォルトで左から探しますが、(\d+)頭 という塊で探すため）
             return int(match.group(1))
     return None
