@@ -46,7 +46,7 @@ SELECTOR_TAG_RESULT = {
     RaceCol.POPULARITY: ".OddsPeople",
     RaceCol.ODDS: "td[class='Odds Txt_R']",
     RaceCol.PASSING_ORDER: ".PassageRate",
-    RaceCol.LAST_3F: ".Time",
+    RaceCol.LAST_3F: "td:nth-of-type(12)",
 }
 
 SELECTOR_TAG_RESULT_NAR = {
