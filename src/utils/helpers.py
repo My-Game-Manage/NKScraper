@@ -1,3 +1,4 @@
+import re
 from src.constants.master_data import JYO_NAME_MAP, JRA_MAX_COURSE_CODE, EXCLUDE_COURSES
 from src.constants.schema import NetkeibaDomain, NetkeibaPageType, RaceCol
 
@@ -164,3 +165,14 @@ def split_race_info(text: str) -> list:
     """
     # split() は引数を指定しない場合、連続する空白や全角スペースも適切に処理します
     return text.split()
+    
+def extract_num_horses(data_list):
+    """
+    リストから「頭」を含む要素を探し、その数字部分を抽出する
+    """
+    for item in data_list:
+        if "頭" in item:
+            # 数字の部分だけを抽出して整数型で返す
+            num_str = re.sub(r'\D', '', item)
+            return int(num_str) if num_str else None
+    return None
