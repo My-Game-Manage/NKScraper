@@ -39,7 +39,7 @@ SELECTOR_TAG_HORSE = {
 SELECTOR_TAG_RESULT = {
     RaceCol.HORSE_NAME: ".Horse_Name a",
     RaceCol.AGE: ".Horse_Info_Detail",
-    RaceCol.HORSE_NUM: "td[class='Num Waku']",
+    RaceCol.HORSE_NUM: "td[class='Num Txt_C']",
     RaceCol.RANK: ".Rank",
     RaceCol.TIME: ".Time",
     RaceCol.MARGIN: ".RaceTime",
@@ -47,6 +47,10 @@ SELECTOR_TAG_RESULT = {
     RaceCol.ODDS: "td[class='Odds Txt_R']",
     RaceCol.PASSING_ORDER: ".PassageRate",
     RaceCol.LAST_3F: ".Time",
+}
+
+SELECTOR_TAG_RESULT_NAR = {
+    RaceCol.HORSE_NUM: "td[class='Num Waku']",
 }
 
 class DataParser:
@@ -243,12 +247,14 @@ class DataParser:
         テーブルから出走馬の結果情報を取得し、辞書にして返す
         """
         self.logger.debug(f"get_entryhorse_result_from_row: start processing ...")
+
+        is_nar = is_nar_id(race_id)
         
         # 馬名・ID
         h_name, h_id = self._get_horse_name_and_horse_id(row, is_result_page=True)
         
         # 馬番取得
-        horse_num = self._get_horse_umaban(row, is_result_page=True)
+        horse_num = self._get_horse_umaban(row, is_nar, is_result_page=True)
         
         # 性齢：class="Age" を使用／中央はclass="Barei"を使用
         sex, age = self._get_horse_sex_and_age(row, is_result_page=True)            
@@ -257,7 +263,7 @@ class DataParser:
         weight, weight_diff = self._get_horse_weight_and_diff(row)
 
         # 通過順取得
-        pass_order = pass_map.get(horse_num, "") if is_nar_id(race_id) else self._get_horse_passorder(row)
+        pass_order = pass_map.get(horse_num, "") if is_nar else self._get_horse_passorder(row)
         
         return {
             RaceCol.RANK: self._get_horse_rank(row),
@@ -357,8 +363,11 @@ class DataParser:
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
 
-    def _get_horse_umaban(self, soup: BeautifulSoup, is_result_page: bool=False) -> str:
-        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.HORSE_NUM] if is_result_page else SELECTOR_TAG[RaceCol.HORSE_NUM])
+    def _get_horse_umaban(self, soup: BeautifulSoup, is_nar: bool=False, is_result_page: bool=False) -> str:
+        if is_result_page:
+            return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT_NAR[RaceCol.HORSE_NUM] if is_nar else SELECTOR_TAG_RESULT[RaceCol.HORSE_NUM])
+        else:
+            return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.HORSE_NUM] if is_nar else SELECTOR_TAG[RaceCol.HORSE_NUM])
         
     def _get_horse_kinryo(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.WEIGHT_CARRIED])
