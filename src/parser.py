@@ -394,6 +394,7 @@ class DataParser:
         """
         地方競馬のサイトは通過順が異なるので、こちらを使う
         """
+        pass_map = {}
         try:
             # 指定されたクラスの行をすべて取得
             corner_rows = soup.select(".RaceCommon_Table.Corner_Num tr")
@@ -411,7 +412,7 @@ class DataParser:
                 # 1. 「コーナー」という文字で分割して、右側の馬番リストを取得
                 if 'コーナー' in th_text:
                     # 右側だけを取り出し、改行や余計な空白をすべて削除
-                    order_raw = th_text.split('コーナー')[1].strip().replace('\n', '').replace('\r', '')
+                    order_raw = th_text
                     self.logger.info(f"order_raw: {order_raw}")
 
                     # 2. カッコ「()」をカンマ「,」に置換して、すべてカンマ区切りのリストにする
