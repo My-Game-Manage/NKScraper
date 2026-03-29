@@ -42,7 +42,7 @@ SELECTOR_TAG_RESULT = {
     RaceCol.HORSE_NUM: "td[class='Num Txt_C']",
     RaceCol.RANK: ".Rank",
     RaceCol.TIME: ".Time",
-    RaceCol.MARGIN: ".RaceTime",
+    RaceCol.MARGIN: "td:nth-of-type(8)",
     RaceCol.POPULARITY: ".OddsPeople",
     RaceCol.ODDS: "td[class='Odds Txt_R']",
     RaceCol.PASSING_ORDER: ".PassageRate",
