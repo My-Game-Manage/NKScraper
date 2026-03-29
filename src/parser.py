@@ -361,6 +361,7 @@ class DataParser:
         #num_horse = num_match.group(1) if num_match else ""
         t = split_race_info(race_data2)
         num_horse = extract_num_horses_flexible(t)
+        self.logger.info(f"num_horse: {num_horse}")
         return surface, distance, weather, condition, num_horse
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
