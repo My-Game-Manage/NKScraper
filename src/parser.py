@@ -38,6 +38,13 @@ SELECTOR_TAG_RESULT = {
     RaceCol.HORSE_NAME: ".Horse_Name a",
     RaceCol.AGE: ".Horse_Info_Detail",
     RaceCol.HORSE_NUM: "td[class='Num Waku']",
+    RaceCol.RANK: ".Rank",
+    RaceCol.TIME: ".Time",
+    RaceCol.MARGIN: ".RaceTime",
+    RaceCol.POPULARITY: ".OddsPeople",
+    RaceCol.WIN_ODDS: ".Odds_Ninki",
+    RaceCol.PASSING_ORDER: ".PassageRate",
+    RaceCol.LAST_3F: ".Time",
 }
 
 class DataParser:
@@ -80,7 +87,7 @@ class DataParser:
         # 2. 重複を除去し、昇順に並べ替えて返す
         return sorted(list(set(race_ids)))
 
-    def parse_race_page(self, html, race_id):
+    def parse_race_page(self, html: str, date: str, race_id: str):
         """
         出馬表ページから必要な情報を取得する
         """
@@ -88,20 +95,12 @@ class DataParser:
         try:
             soup = BeautifulSoup(html, 'html.parser')
             
-            condition, distance = self._get_cond_and_dist(soup)
-            
+            # レース情報
+            race_data = self._get_race_data(date, soup)
+            self.logger.info(f"race_data: {race_data}")
+
             race_info_list = []
             horse_ids = []
-
-            # レース情報
-            race_data = {
-                RaceCol.RACE_NAME: self._get_race_name(soup),     # レース名
-                RaceCol.SURFACE: condition,                       # 馬場
-                RaceCol.DISTANCE: distance,                       # 距離
-                RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
-                RaceCol.RACE_NUMBER: self._get_race_num(race_id), # レース番号
-            }
-            self.logger.debug(f"race_data: {race_data}")
         
             # 出馬表の行をループ
             rows = soup.select("tr.HorseList")
@@ -172,25 +171,16 @@ class DataParser:
             self.logger.warning(f"解析エラー (HorseID: {horse_id}): {e}")
             return pd.DataFrame(), sire_names
             
-    def parse_race_result_page(self, html: str, race_id: str) -> list:
+    def parse_race_result_page(self, html: str, date: str, race_id: str) -> list:
         """
         レース結果ページから情報取得
         """
         self.logger.info(f"race-id {race_id} into parse_race_result_page: start processing ...")
         try:
             soup = BeautifulSoup(html, 'html.parser')
-            # 種別、距離
-            condition, distance = self._get_cond_and_dist(soup)
+            
             # レース情報
-            race_data = {
-                RaceCol.RACE_NAME: self._get_race_name(soup),     # レース名
-                RaceCol.SURFACE: condition,                       # 馬場
-                RaceCol.DISTANCE: distance,                       # 距離
-                RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
-                RaceCol.RACE_NUMBER: self._get_race_num(race_id), # レース番号
-                RaceCol.WEATHER: "天気",                           # 天候
-                RaceCol.TRACK_CONDITION: "馬場",                   # 馬場
-            }
+            race_data = self._get_race_data(date, soup)
             self.logger.info(f"race_data: {race_data}")
 
             race_result_list = []
@@ -257,7 +247,7 @@ class DataParser:
         weight, weight_diff = self._get_horse_weight_and_diff(row)
         
         return {
-            RaceCol.RANK: "着順",
+            RaceCol.RANK: self._get_horse_rank(row),
             RaceCol.BRACKET_NUM: self._get_horse_waku(row),
             RaceCol.HORSE_NUM: self._get_horse_umaban(row, is_result_page=True),
             RaceCol.HORSE_NAME: h_name,
@@ -265,12 +255,12 @@ class DataParser:
             RaceCol.AGE: age,
             RaceCol.WEIGHT_CARRIED: self._get_horse_kinryo(row),
             RaceCol.JOCKEY: self._get_horse_jockey(row),
-            RaceCol.TIME: "タイム",
-            RaceCol.MARGIN: "着差",
-            RaceCol.POPULARITY: "人気",
-            RaceCol.WIN_ODDS: "オッズ",
-            RaceCol.LAST_3F: "上り",
-            RaceCol.PASSING_ORDER: "通過順",
+            RaceCol.TIME: self._get_horse_time(row),
+            RaceCol.MARGIN: self._get_horse_margin(row),
+            RaceCol.POPULARITY: self._get_horse_popularity(row),
+            RaceCol.WIN_ODDS: self._get_horse_odds(row),
+            RaceCol.LAST_3F: self._get_horse_last3f(row),
+            RaceCol.PASSING_ORDER: self._get_horse_passorder(row),
             RaceCol.STABLE: self._get_horse_trainer(row),
             RaceCol.HORSE_WEIGHT: weight,
             RaceCol.WEIGHT_DIFF: weight_diff,
@@ -313,15 +303,35 @@ class DataParser:
     def _get_race_num(self, race_id: str) -> str:
         return int(race_id[-2:])
 
-    def _get_cond_and_dist(self, soup: BeautifulSoup) -> list:
+    def _get_race_data(self, date: str, soup: BeautifulSoup) -> dict:
+        """
+        レースの基本情報取得
+        """
+        surface, distance、weather, condition = self._get_distance_and_condition(soup)
+        num_horse = 0
+        return {
+            RaceCol.DATE: date,                               # 日付
+            RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
+            RaceCol.WEATHER: weather,                         # 天候
+            RaceCol.RACE_NUMBER: self._get_race_num(race_id), # レース番号
+            RaceCol.RACE_NAME: self._get_race_name(soup),     # レース名
+            RaceCol.SURFACE: surface,                         # 種別
+            RaceCol.DISTANCE: distance,                       # 距離
+            RaceCol.TRACK_CONDITION: condition,               # 馬場
+            RaceCol.NUM_HORSE: num_horse,                     # 頭数
+        }
+
+    def _get_distance_and_condition(self, soup: BeautifulSoup) -> list:
         # レース基本情報
         race_data = self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_DATA])
         
         # 距離と種別の抽出 (例: ダ1600m)
         dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
-        condition = dist_match.group(1) if dist_match else ""
+        surface = dist_match.group(1) if dist_match else ""
         distance = dist_match.group(2) if dist_match else ""
-        return condition, distance
+        weather = ""
+        condition = ""
+        return surface, distance, weather, condition
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
@@ -337,6 +347,27 @@ class DataParser:
 
     def _get_horse_trainer(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.STABLE])
+
+    def _get_horse_rank(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.RANK])
+
+    def _get_horse_time(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.TIME])
+        
+    def _get_horse_time_margin(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.MARGIN])
+        
+    def _get_horse_popularity(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.POPULARITY])
+        
+    def _get_horse_odds(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.WIN_ODDS])
+        
+    def _get_horse_last3f(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.LAST_3F])
+        
+    def _get_horse_passorder(self, soup: BeautifulSoup) -> str:
+        return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.PASSING_ORDER])
 
     def _get_horse_name_and_horse_id(self, soup: BeautifulSoup, is_result_page: bool=False) -> list:
         h_tag = soup.select_one(SELECTOR_TAG_RESULT[RaceCol.HORSE_NAME] if is_result_page else SELECTOR_TAG[RaceCol.HORSE_NAME])
