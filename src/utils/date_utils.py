@@ -42,7 +42,11 @@ def time_to_seconds(time_str):
         return float(time_str)
     except: return None
 
-def format_date_strict(date_str: str) -> str:
+def format_date_strict(date_val) -> str:
+    if isinstance(date_val, datetime):
+        # datetime型の場合はそのまま返す
+        return date_val
+
     # 文字列を一度日付オブジェクトに変換してから再フォーマット
     dt = datetime.strptime(date_str, "%Y%m%d")
     return dt.strftime("%Y/%m/%d")
