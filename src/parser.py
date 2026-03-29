@@ -44,7 +44,7 @@ SELECTOR_TAG_RESULT = {
     RaceCol.TIME: ".Time",
     RaceCol.MARGIN: ".RaceTime",
     RaceCol.POPULARITY: ".OddsPeople",
-    RaceCol.ODDS: ".Odds",
+    RaceCol.ODDS: ".Odds Txt_R",
     RaceCol.PASSING_ORDER: ".PassageRate",
     RaceCol.LAST_3F: ".Time",
 }
@@ -260,7 +260,7 @@ class DataParser:
             RaceCol.TIME: self._get_horse_time(row),
             RaceCol.MARGIN: self._get_horse_time_margin(row),
             RaceCol.POPULARITY: self._get_horse_popularity(row),
-            RaceCol.WIN_ODDS: self._get_horse_odds(row),
+            RaceCol.ODDS: self._get_horse_odds(row),
             RaceCol.LAST_3F: self._get_horse_last3f(row),
             RaceCol.PASSING_ORDER: self._get_horse_passorder(row),
             RaceCol.STABLE: self._get_horse_trainer(row),
