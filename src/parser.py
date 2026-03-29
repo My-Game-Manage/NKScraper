@@ -307,7 +307,7 @@ class DataParser:
         """
         レースの基本情報取得
         """
-        surface, distance、weather, condition, num_horse = self._get_distance_and_condition(soup)
+        surface, distance, weather, condition, num_horse = self._get_distance_and_condition(soup)
         return {
             RaceCol.DATE: date,                               # 日付
             RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
