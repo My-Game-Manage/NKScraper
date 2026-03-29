@@ -157,3 +157,10 @@ def override_race_info_parents_name(race_info_list: list, sire_names_list: list)
             item_a[RaceCol.FATHER] = sire_map[target_id].get(RaceCol.FATHER, item_a[RaceCol.FATHER])
             item_a[RaceCol.MOTHER] = sire_map[target_id].get(RaceCol.MOTHER, item_a[RaceCol.MOTHER])
     return race_info_list
+
+def split_race_info(text: str) -> list:
+    """
+    文字列を空白（全角・半角問わず）で区切ってリストで取得する
+    """
+    # split() は引数を指定しない場合、連続する空白や全角スペースも適切に処理します
+    return text.split()
