@@ -2,7 +2,7 @@
 
 import pandas as pd
 from src.constants.schema import RaceCol
-from src.utils.date_utils import time_to_seconds
+from src.utils.date_utils import time_to_seconds, format_date_strict
 
 class DataNormalizer:
     @staticmethod
@@ -16,6 +16,16 @@ class DataNormalizer:
             df[RaceCol.TIME] = df[RaceCol.TIME].apply(time_to_seconds)
             
         return df
+
+    @staticmethod
+    def convert_date_to_strict(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        '20260320'のような日付を'2026/03/20'に変換して上書き
+        """
+        # 日付カラムが存在する場合のみ実行
+    if RaceCol.DATE in df.columns:
+        df[RaceCol.DATE] = df[RaceCol.DATE].apply(format_date_strict)
+    return df
 
     @staticmethod
     def ensure_dataframe(data) -> pd.DataFrame:
@@ -75,6 +85,9 @@ class DataNormalizer:
 
         # 4. タイムを秒換算に書き換え
         df = DataNormalizer.convert_time_to_seconds(df)
+
+        # 5. 日付をYYYY/MM/DDに書き換え
+        df = DataNormalizer.convert_date_to_strict(df)
 
         # 5. 変換後の英語名で、推奨される列順序を定義
         # (RaceCol の定数を使うことで、タイポを防ぎます)
