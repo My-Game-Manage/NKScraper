@@ -22,6 +22,7 @@ def normalize_date_format(date_val) -> str:
     normalized = "".join(filter(str.isdigit, date_str))
     
     return normalized
+    
 def get_today_jst() -> str:
     """
     現在の日本時間を 'YYYYMMDD' 形式で返す
@@ -40,3 +41,8 @@ def time_to_seconds(time_str):
             return int(m) * 60 + float(s)
         return float(time_str)
     except: return None
+
+def format_date_strict(date_str: str) -> str:
+    # 文字列を一度日付オブジェクトに変換してから再フォーマット
+    dt = datetime.strptime(date_str, "%Y%m%d")
+    return dt.strftime("%Y/%m/%d")
