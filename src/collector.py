@@ -26,17 +26,12 @@ from src.utils.helpers import (
     override_race_info_parents_name,
 )
 
-class DataType(Enum):
-    SHUTUBA = "出馬表"
-    HISTORY = "過去履歴"
-    RESULT = "レース結果"
-
 DEFAULT_BASE_DIR = 'data'
 
 FILE_PREFIX_MAP = {
-    DataType.SHUTUBA: "full_races",
-    DataType.HISTORY: "horse_history",
-    DataType.RESULT: "result_races",
+    NetkeibaPageType.SHUTUBA: "full_races",
+    NetkeibaPageType.HORSE: "horse_history",
+    NetkeibaPageType.RESULT: "result_races",
 }
 
 class RaceDataCollector:
@@ -94,14 +89,14 @@ class RaceDataCollector:
             
         # 3. CSVとして保存
         if race_info_list:
-            self._save_to_csv(self.normalizer.ensure_dataframe(race_info_list), det_target_date, DataType.SHUTUBA)
+            self._save_to_csv(self.normalizer.ensure_dataframe(race_info_list), det_target_date, NetkeibaPageType.SHUTUBA)
             self.logger.info(f"race_info_listを保存しました")
         if horse_info_list:
-            self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), det_target_date, DataType.HISTORY)
+            self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), det_target_date, NetkeibaPageType.HORSE)
             self.logger.info(f"horse_info_listを保存しました")
         if race_result_list:
             self.logger.debug(f"result_list: {race_result_list}")
-            self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), det_target_date, DataType.RESULT)
+            self._save_to_csv(self.normalizer.ensure_dataframe(race_result_list), det_target_date, NetkeibaPageType.RESULT)
             self.logger.info(f"race_result_listを保存しました")
 
         self.logger.info("取得と保存が終了しました")
@@ -214,14 +209,14 @@ class RaceDataCollector:
         result_info = self.parser.parse_race_result_page(html, date, race_id)
         return result_info
 
-    def _save_to_csv(self, data_df: pd.DataFrame, date_str: str, data_type: DataType):
+    def _save_to_csv(self, data_df: pd.DataFrame, date_str: str, data_type: NetkeibaPageType):
         """
         データをCSVで保存する
         """
         if data_df.empty:
             return
 
-        prefix_str = FILE_PREFIX_MAP.get(data_type, DataType.SHUTUBA)
+        prefix_str = FILE_PREFIX_MAP.get(data_type, NetkeibaPageType.SHUTUBA)
         target_path = f"{self.base_dir}/{prefix_str}_{date_str}.csv"
 
         data_df.to_csv(target_path, index=False, encoding="utf_8_sig")
