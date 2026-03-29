@@ -164,8 +164,6 @@ def split_race_info(text: str) -> list:
     文字列を空白（全角・半角問わず）で区切ってリストで取得する
     """
     # split() は引数を指定しない場合、連続する空白や全角スペースも適切に処理します
-    t = text.split(' ')
-    print(f"split: {text} >>> {t}")
     return text.split()
     
 def extract_num_horses(data_list):
