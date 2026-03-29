@@ -323,6 +323,7 @@ class DataParser:
     def _get_distance_and_condition(self, soup: BeautifulSoup) -> list:
         # レース基本情報
         race_data = self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.RACE_DATA])
+        self.logger.info(f"race_data content: {race_data}")
         
         # 距離と種別の抽出 (例: ダ1600m)
         dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
