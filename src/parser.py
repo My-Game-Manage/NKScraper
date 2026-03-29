@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 from src.utils.logger import setup_logger
 from src.constants.schema import RaceCol, NetkeibaPageType
-from src.utils.helpers import get_jyo_name, is_nar_id, split_race_info, extract_num_horses
+from src.utils.helpers import get_jyo_name, is_nar_id, split_race_info, extract_num_horses_flexible
 from src.normalizer import DataNormalizer
 
 SELECTOR_TAG = {
@@ -360,8 +360,7 @@ class DataParser:
         #num_match = re.search(r'(\d+)(頭)', race_data2)
         #num_horse = num_match.group(1) if num_match else ""
         t = split_race_info(race_data2)
-        self.logger.info(f"馬の頭数のため：{t}")
-        num_horse = extract_num_horses(t)
+        num_horse = extract_num_horses_flexible(t)
         return surface, distance, weather, condition, num_horse
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
