@@ -12,7 +12,7 @@ from src.utils.helpers import get_jyo_name
 from src.normalizer import DataNormalizer
 
 SELECTOR_TAG = {
-    RaceCol.RACE_DATA: ".RaceData01",
+    RaceCol.RACE_DATA: ".RaceData01, .RaceData02",
     RaceCol.RACE_NAME: ".RaceName",
     RaceCol.BRACKET_NUM: "td[class*='Waku']",
     RaceCol.HORSE_NUM: "td[class*='Umaban']",
@@ -307,8 +307,7 @@ class DataParser:
         """
         レースの基本情報取得
         """
-        surface, distance、weather, condition = self._get_distance_and_condition(soup)
-        num_horse = 0
+        surface, distance、weather, condition, num_horse = self._get_distance_and_condition(soup)
         return {
             RaceCol.DATE: date,                               # 日付
             RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
@@ -329,9 +328,16 @@ class DataParser:
         dist_match = re.search(r'(ダ|芝|障)(\d+)m', race_data)
         surface = dist_match.group(1) if dist_match else ""
         distance = dist_match.group(2) if dist_match else ""
-        weather = ""
-        condition = ""
-        return surface, distance, weather, condition
+        # 天候
+        weat_match = re.search(r'(天候:)(晴|曇|雨)', race_data)
+        weather = weat_match.group(2) if weat_match else ""
+        # 馬場
+        cond_match = re.search(r'(馬場:)(良|稍|重|不)', race_data)
+        condition = cond_match.group(2) if cond_match else ""
+        # 頭数
+        num_match = re.search(r'(\d+)(頭)', race_data)
+        num_horse = num_match.group(1) if num_match else ""
+        return surface, distance, weather, condition, num_horse
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
