@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 from src.utils.logger import setup_logger
 from src.constants.schema import RaceCol, NetkeibaPageType
-from src.utils.helpers import get_jyo_name, is_nar_id, split_race_info, extract_num_horses
+from src.utils.helpers import get_jyo_name, is_nar_id, get_num_horses_from_text
 from src.normalizer import DataNormalizer
 
 SELECTOR_TAG = {
@@ -327,7 +327,7 @@ class DataParser:
         """
         レースの基本情報取得
         """
-        surface, distance, weather, condition, num_horse = self._get_distance_and_condition(soup)
+        surface, distance, weather, condition, num_horses = self._get_distance_and_condition(soup)
         return {
             RaceCol.DATE: date,                               # 日付
             RaceCol.COURSE: get_jyo_name(race_id),            # 開催場所
@@ -337,7 +337,7 @@ class DataParser:
             RaceCol.SURFACE: surface,                         # 種別
             RaceCol.DISTANCE: distance,                       # 距離
             RaceCol.TRACK_CONDITION: condition,               # 馬場
-            RaceCol.NUM_HORSES: num_horse,                     # 頭数
+            RaceCol.NUM_HORSES: num_horses,                     # 頭数
         }
 
     def _get_distance_and_condition(self, soup: BeautifulSoup) -> list:
@@ -356,9 +356,9 @@ class DataParser:
         condition = cond_match.group(2) if cond_match else ""
         # 頭数
         race_data2 = soup.select_one(SELECTOR_TAG_RACEDATA2)
-        num_horse = extract_num_horses(split_race_info(race_data2.get_text()))
-        self.logger.debug(f"num_horse: {num_horse}")
-        return surface, distance, weather, condition, num_horse
+        num_horses = get_num_horses_from_text(race_data2.get_text())
+        self.logger.debug(f"num_horses: {num_horses}")
+        return surface, distance, weather, condition, num_horses
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG[RaceCol.BRACKET_NUM])
