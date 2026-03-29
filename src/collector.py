@@ -79,10 +79,10 @@ class RaceDataCollector:
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
         race_info_list, horse_info_list, horse_ids, race_result_list = [], [], [], []
         if is_result:
-            race_result_list = self._get_race_result_from_ids(target_race_ids)
+            race_result_list = self._get_race_result_from_ids(det_target_date, target_race_ids)
             self.logger.info(f"race_result_list: {len(race_result_list)}件取得しました")
         else:
-            race_info_list, horse_ids = self._get_race_infos_from_ids(target_race_ids, only_race)
+            race_info_list, horse_ids = self._get_race_infos_from_ids(det_target_date, target_race_ids)
             self.logger.info(f"race_info_list: {len(race_info_list)}件取得しました")
             self.logger.info(f"horse_ids: {len(horse_ids)}件取得しました")
             if horse_ids and not only_race:
@@ -149,14 +149,14 @@ class RaceDataCollector:
             filtered_ids = filter_race_ids_by_number(filtered_ids, race_nums)
         return filtered_ids
 
-    def _get_race_infos_from_ids(self, race_ids, only_race: bool):
+    def _get_race_infos_from_ids(self, date: str, race_ids: list):
         """
         目的の出馬表、各馬のIDの取得
         """
         race_infos = []
         horse_ids = []
         for r_id in race_ids:
-            r_info, h_ids = self._collect_race_at(r_id)
+            r_info, h_ids = self._collect_race_at(date, r_id)
             if r_info:
                 race_infos += r_info
                 horse_ids += h_ids
@@ -182,27 +182,27 @@ class RaceDataCollector:
                 time.sleep(1)
         return history_df_list, sire_names_list
 
-    def _get_race_result_from_ids(self, race_ids):
+    def _get_race_result_from_ids(self, date: str, race_ids: list) -> list:
         """
         目的のレース結果の取得
         """
         result_list = []
         for r_id in race_ids:
-            result = self._collect_result_at(r_id)
+            result = self._collect_result_at(date, r_id)
             if result:
                 result_list += result
         return result_list
 
-    def _collect_race_at(self, race_id):
+    def _collect_race_at(self, date: str, race_id: str):
         """
         特定の1レースに関する情報を取得する
         """
         url = get_race_url(race_id)
         html = self.client.get_html(url)
-        race_info, horse_ids = self.parser.parse_race_page(html, race_id)
+        race_info, horse_ids = self.parser.parse_race_page(html, date, race_id)
         return race_info, horse_ids
 
-    def _collect_result_at(self, race_id):
+    def _collect_result_at(self, date: str, race_id: str) -> list:
         """
         特定の1レースに関する結果情報を取得
         """
