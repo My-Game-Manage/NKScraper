@@ -200,7 +200,7 @@ class DataParser:
                 if not h_tag:
                     continue
                 result = self._get_entryhorse_result_from_row(row, race_id, pass_map)
-                self.logger.info(f"result: {result}")
+                self.logger.debug(f"result: {result}")
                 if result:
                     race_result_list.append(race_data | result)
             return race_result_list
@@ -408,11 +408,13 @@ class DataParser:
                 if 'コーナー' in raw_text:
                     # 右側だけを取り出し、改行や余計な空白をすべて削除
                     order_raw = raw_text.split('コーナー')[1].strip().replace('\n', '').replace('\r', '')
+                    self.logger.info(f"order_raw: {order_raw}")
 
                     # 2. カッコ「()」をカンマ「,」に置換して、すべてカンマ区切りのリストにする
                     order_processed = order_raw.replace('(', ',').replace(')', ',')
                     # カンマで分割し、空要素を除去して純粋な馬番だけのリストにする
                     order_list = [h.strip() for h in order_processed.split(',') if h.strip()]
+                    self.logger.info(f"order_list: {order_list}")
 
                     # 3. リストの並び順をそのまま「通過順位」として記録
                     for rank_idx, h_num in enumerate(order_list):
@@ -427,6 +429,7 @@ class DataParser:
             # 4. 全コーナー分を「1-1-2-2」形式の文字列に変換
             for h_num, ranks in temp_pass_data.items():
                 pass_map[h_num] = "-".join(ranks)
+                self.logger.info(f"pass_map: {pass_map}")
             return pass_map
         except Exception as e:
             self.logger.warning(f"コーナー通過順の解析エラー: {e}")
