@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 from src.utils.logger import setup_logger
 from src.constants.schema import RaceCol
-from src.utils.helpers import get_jyo_name
+from src.utils.helpers import get_jyo_name, is_nar_id
 from src.normalizer import DataNormalizer
 
 SELECTOR_TAG = {
@@ -184,6 +184,11 @@ class DataParser:
             # レース情報
             race_data = self._get_race_data(date, race_id, soup)
             self.logger.info(f"race_data: {race_data}")
+            # 地方競馬の場合は通過順マップを作成
+            if is_nar_id(race_id):
+                pass_map = self._get_horse_passing_orders_map(soup)
+            else:
+                pass_map = {}
 
             race_result_list = []
             
@@ -194,7 +199,7 @@ class DataParser:
                 h_tag = row.select_one(SELECTOR_TAG_RESULT[RaceCol.HORSE_NAME])
                 if not h_tag:
                     continue
-                result = self._get_entryhorse_result_from_row(row)
+                result = self._get_entryhorse_result_from_row(row, race_id, pass_map)
                 self.logger.info(f"result: {result}")
                 if result:
                     race_result_list.append(race_data | result)
@@ -233,7 +238,7 @@ class DataParser:
             RaceCol.HORSE_ID: h_id,
         }
 
-    def _get_entryhorse_result_from_row(self, row: BeautifulSoup) -> dict:
+    def _get_entryhorse_result_from_row(self, row: BeautifulSoup, race_id: str, pass_map: dict) -> dict:
         """
         テーブルから出走馬の結果情報を取得し、辞書にして返す
         """
@@ -242,16 +247,22 @@ class DataParser:
         # 馬名・ID
         h_name, h_id = self._get_horse_name_and_horse_id(row, is_result_page=True)
         
+        # 馬番取得
+        horse_num = self._get_horse_umaban(row, is_result_page=True)
+        
         # 性齢：class="Age" を使用／中央はclass="Barei"を使用
         sex, age = self._get_horse_sex_and_age(row, is_result_page=True)            
         
         # 馬体重の分離
         weight, weight_diff = self._get_horse_weight_and_diff(row)
+
+        # 通過順取得
+        pass_order = pass_map.get(horse_num, "") if is_nar_id(race_id) else self._get_horse_passorder(row)
         
         return {
             RaceCol.RANK: self._get_horse_rank(row),
             RaceCol.BRACKET_NUM: self._get_horse_waku(row),
-            RaceCol.HORSE_NUM: self._get_horse_umaban(row, is_result_page=True),
+            RaceCol.HORSE_NUM: horse_num,
             RaceCol.HORSE_NAME: h_name,
             RaceCol.SEX: sex,
             RaceCol.AGE: age,
@@ -262,7 +273,7 @@ class DataParser:
             RaceCol.POPULARITY: self._get_horse_popularity(row),
             RaceCol.ODDS: self._get_horse_odds(row),
             RaceCol.LAST_3F: self._get_horse_last3f(row),
-            RaceCol.PASSING_ORDER: self._get_horse_passorder(row),
+            RaceCol.PASSING_ORDER: pass_order,
             RaceCol.STABLE: self._get_horse_trainer(row),
             RaceCol.HORSE_WEIGHT: weight,
             RaceCol.WEIGHT_DIFF: weight_diff,
@@ -378,6 +389,47 @@ class DataParser:
         
     def _get_horse_passorder(self, soup: BeautifulSoup) -> str:
         return self._get_elm_by_selector(soup, SELECTOR_TAG_RESULT[RaceCol.PASSING_ORDER])
+
+    def _get_horse_passing_orders_map(self, soup: BeautifulSoup) -> dict:
+        """
+        地方競馬のサイトは通過順が異なるので、こちらを使う
+        """
+        try:
+            # 指定されたクラスの行をすべて取得
+            corner_rows = soup.select(".RaceCommon_Table.Corner_Num tr")
+            temp_pass_data = {}
+
+            for row in corner_rows:
+                raw_text = row.get_attribute('textContent').strip()
+                if not raw_text: continue
+
+                # 1. 「コーナー」という文字で分割して、右側の馬番リストを取得
+                if 'コーナー' in raw_text:
+                    # 右側だけを取り出し、改行や余計な空白をすべて削除
+                    order_raw = raw_text.split('コーナー')[1].strip().replace('\n', '').replace('\r', '')
+
+                    # 2. カッコ「()」をカンマ「,」に置換して、すべてカンマ区切りのリストにする
+                    order_processed = order_raw.replace('(', ',').replace(')', ',')
+                    # カンマで分割し、空要素を除去して純粋な馬番だけのリストにする
+                    order_list = [h.strip() for h in order_processed.split(',') if h.strip()]
+
+                    # 3. リストの並び順をそのまま「通過順位」として記録
+                    for rank_idx, h_num in enumerate(order_list):
+                        # 数字以外の記号があれば除去（馬番のみ抽出）
+                        h_num_clean = re.sub(r'\D', '', h_num)
+                        if h_num_clean:
+                            if h_num_clean not in temp_pass_data:
+                                temp_pass_data[h_num_clean] = []
+                            # その馬のこのコーナーでの位置(1番目なら"1")を記録
+                            temp_pass_data[h_num_clean].append(str(rank_idx + 1))
+
+            # 4. 全コーナー分を「1-1-2-2」形式の文字列に変換
+            for h_num, ranks in temp_pass_data.items():
+                pass_map[h_num] = "-".join(ranks)
+            return pass_map
+        except Exception as e:
+            self.logger.warning(f"コーナー通過順の解析エラー: {e}")
+            return None
 
     def _get_horse_name_and_horse_id(self, soup: BeautifulSoup, is_result_page: bool=False) -> list:
         h_tag = soup.select_one(SELECTOR_TAG_RESULT[RaceCol.HORSE_NAME] if is_result_page else SELECTOR_TAG[RaceCol.HORSE_NAME])
