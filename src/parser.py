@@ -401,6 +401,10 @@ class DataParser:
             self.logger.info(f"通過順： {corner_rows}")
 
             for row in corner_rows:
+                th = row.find('th')
+                td = row.find('td')
+                self.logger.info(f"th:{th}")
+                self.logger.info(f"td:{td}")
                 raw_text = row.get_attribute('textContent').strip()
                 if not raw_text: continue
 
