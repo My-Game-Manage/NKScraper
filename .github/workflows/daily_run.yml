@@ -3,7 +3,6 @@ name: Scheduled Horse Racing Scraping
 on:
   schedule:
     - cron: '0 10 * * *' # 日本時間19:00：翌日の出馬表(fetch_data.py)を取得
-    - cron: '0 13 * * *' # 日本時間22:00：当日の結果(fetch_results.py)を取得
   workflow_dispatch: # 手動実行ボタンも残しておく
 
 jobs:
@@ -39,14 +38,6 @@ jobs:
           echo "明日の日付は: ${{ env.TOMORROW_DATE }}"
           # 構築した引数で実行
           python main.py --date ${{ env.TOMORROW_DATE }}
-        
-      # 結果取得（当日分）
-      - name: Fetch Today's Results
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)/src
-          
-          # 構築した引数で実行
-          python main.py --result
         
       - name: Commit and Push
         run: |
