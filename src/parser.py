@@ -140,10 +140,14 @@ class DataParser:
             soup = BeautifulSoup(html, 'html.parser')
         
             # 父母馬名の取得
+            logger.info(f"父母馬取得開始...")
             sire_names = self._get_sire_names(horse_id, soup)
+            logger.info(f"sire_names: {sire_names}")
         
             # tableからDataFrameを作成
+            logger.info("table取得")
             dfs = pd.read_html(StringIO(html))
+            logger.info(f"dfs: {dfs}")
             res_df = pd.DataFrame()
             for df in dfs:
                 if '日付' in df.columns:
