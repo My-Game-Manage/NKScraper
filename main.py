@@ -2,6 +2,8 @@
 
 import argparse
 import sys
+import logging
+
 from src.collector import RaceDataCollector
 from src.utils.date_utils import get_today_jst, normalize_date_format
 from src.constants.master_data import JYO_NAME_MAP
@@ -91,8 +93,30 @@ def main():
     )
     parser.set_defaults(only_race=False)
     
+    # 7. ログレベルの設定
+    parser.add_argument(
+        '--log', 
+        default='INFO', 
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
+        help='ログレベルを指定します (デフォルト: INFO)'
+    )
+    
 
     args = parser.parse_args()
+    
+    # ログレベルの設定
+    # setup_loggerに引数から渡されたレベルをセット
+    # loggerの設定（プログラム全体で一度だけ設定）
+    logging.basicConfig(
+        level=args.log,
+        format='%(asctime)s [%(levelname)s][%(funcName)s][%(lineno)d] %(name)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+    # logger実行
+    logging.debug("細かい計算過程を表示します（デバッグ用）")
+    logging.info("シミュレーションを開始します")
+
 
     # 日付のフォーマットを 20260327 形式に正規化
     target_date = normalize_date_format(args.date)
