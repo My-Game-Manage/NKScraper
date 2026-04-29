@@ -1,5 +1,10 @@
 # html parser
 
+import logging
+
+# ロガーの取得（__name__ はファイル名/モジュール名になる）
+logger = logging.getLogger(__name__)
+
 import re
 import pandas as pd
 import numpy as np
@@ -97,13 +102,13 @@ class DataParser:
         """
         出馬表ページから必要な情報を取得する
         """
-        self.logger.info(f"race-id {race_id} into parse_race_page: start processing ...")
+        logger.info(f"race-id {race_id} into parse_race_page: start processing ...")
         try:
             soup = BeautifulSoup(html, 'html.parser')
             
             # レース情報
             race_data = self._get_race_data(date, race_id, soup)
-            self.logger.info(f"race_data: {race_data}")
+            logger.info(f"race_data: {race_data}")
 
             race_info_list = []
             horse_ids = []
@@ -116,21 +121,21 @@ class DataParser:
                 if not h_tag:
                     continue
                 row_info = self._get_entryhorse_info_from_row(row)
-                self.logger.debug(f"row_info: {row_info}")
+                logger.info(f"row_info: {row_info}")
                 if row_info:
                     race_info_list.append(race_data | row_info)
                     horse_ids.append(row_info[RaceCol.HORSE_ID])
 
             return race_info_list, horse_ids
         except Exception as e:
-            self.logger.warning(f"エラーが発生しました: {e}")
+            logger.warning(f"エラーが発生しました: {e}")
             return None, None
 
     def parse_horse_history(self, html: str, horse_id: str):
         """
         馬の過去レースデータを取得する
         """
-        self.logger.info(f"horse_id: {horse_id} の過去履歴の取得開始...")
+        logger.info(f"horse_id: {horse_id} の過去履歴の取得開始...")
         try:
             soup = BeautifulSoup(html, 'html.parser')
         
@@ -166,7 +171,7 @@ class DataParser:
             res_df['馬ID'] = horse_id
             res_df['馬名'] = self._get_elm_by_selector(soup, SELECTOR_TAG_HORSE[RaceCol.HORSE_NAME])
 
-            self.logger.debug(f"res_df: {res_df}")
+            logger.info(f"res_df: {res_df}")
 
             # 6. カラムの正規化（並び替えも込み）
             valid_df = self.normalizer.normalize_columns(res_df, NetkeibaPageType.HORSE)
@@ -174,7 +179,7 @@ class DataParser:
             return valid_df, sire_names
 
         except Exception as e:
-            self.logger.warning(f"解析エラー (HorseID: {horse_id}): {e}")
+            logger.warning(f"解析エラー (HorseID: {horse_id}): {e}")
             return pd.DataFrame(), sire_names
             
     def parse_race_result_page(self, html: str, date: str, race_id: str) -> list:
