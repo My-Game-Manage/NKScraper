@@ -145,7 +145,7 @@ class DataParser:
             logger.info(f"sire_names: {sire_names}")
         
             # tableからDataFrameを作成
-            logger.info("table取得 html: {html}")
+            logger.info(f"table取得 html: {html}")
             dfs = pd.read_html(StringIO(html))
             logger.info(f"dfs: {dfs}")
             res_df = pd.DataFrame()
