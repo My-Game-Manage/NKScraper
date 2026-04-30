@@ -6,16 +6,17 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import WebDriverException
 
-from src.utils.logger import setup_logger
+import logging
+
+# ロガーの取得（__name__ はファイル名/モジュール名になる）
+logger = logging.getLogger(__name__)
+
 
 class NetKeibaClient:
     def __init__(self, headless=True):
         """
         初期化： Driverの初期化
-        """
-        # クラス名を名前としてロガーを作成
-        self.logger = setup_logger("NetkeibaClient")
-        
+        """        
         # ドライバー初期化
         self.driver = self._setup_driver(headless)        
 
@@ -43,18 +44,20 @@ class NetKeibaClient:
         """
         Driverの初期化
         """
-        self.logger.info("Driverの初期化中...")
+        logger.info("Driverの初期化中...")
+
+        dummy_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         
         options = Options()
         if headless:
             options.add_argument('--headless=new')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+        options.add_argument(f'--user-agent={dummy_ua}')
         options.page_load_strategy = 'eager'
         
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.set_page_load_timeout(30)
         
-        self.logger.info("Driverの準備ができました")
+        logger.info("Driverの準備ができました")
         return driver

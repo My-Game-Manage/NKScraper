@@ -11,7 +11,6 @@ import numpy as np
 from io import StringIO
 from bs4 import BeautifulSoup
 
-from src.utils.logger import setup_logger
 from src.constants.schema import RaceCol, NetkeibaPageType
 from src.utils.helpers import get_jyo_name, is_nar_id, get_num_horses_from_text
 from src.normalizer import DataNormalizer
@@ -63,11 +62,7 @@ class DataParser:
     データを適切な形で取得する
     """
     def __init__(self):
-        _CLASSNAME = "DataParser"
-        # クラス名を名前としてロガーを作成
-        self.logger = setup_logger(_CLASSNAME)
-
-        self.logger.info("初期化しています...")
+        logger.info("初期化しています...")
 
         self.normalizer = DataNormalizer()
         
@@ -108,7 +103,7 @@ class DataParser:
             
             # レース情報
             race_data = self._get_race_data(date, race_id, soup)
-            logger.info(f"race_data: {race_data}")
+            logger.debug(f"race_data: {race_data}")
 
             race_info_list = []
             horse_ids = []
@@ -121,7 +116,7 @@ class DataParser:
                 if not h_tag:
                     continue
                 row_info = self._get_entryhorse_info_from_row(row)
-                logger.info(f"row_info: {row_info}")
+                logger.debug(f"row_info: {row_info}")
                 if row_info:
                     race_info_list.append(race_data | row_info)
                     horse_ids.append(row_info[RaceCol.HORSE_ID])
@@ -140,14 +135,10 @@ class DataParser:
             soup = BeautifulSoup(html, 'html.parser')
         
             # 父母馬名の取得
-            logger.info(f"父母馬取得開始...")
             sire_names = self._get_sire_names(horse_id, soup)
-            logger.info(f"sire_names: {sire_names}")
         
             # tableからDataFrameを作成
-            logger.info(f"table取得 html: {html}")
             dfs = pd.read_html(StringIO(html))
-            logger.info(f"dfs: {dfs}")
             res_df = pd.DataFrame()
             for df in dfs:
                 if '日付' in df.columns:
@@ -175,8 +166,6 @@ class DataParser:
             res_df['馬ID'] = horse_id
             res_df['馬名'] = self._get_elm_by_selector(soup, SELECTOR_TAG_HORSE[RaceCol.HORSE_NAME])
 
-            logger.info(f"res_df: {res_df}")
-
             # 6. カラムの正規化（並び替えも込み）
             valid_df = self.normalizer.normalize_columns(res_df, NetkeibaPageType.HORSE)
 
@@ -190,13 +179,13 @@ class DataParser:
         """
         レース結果ページから情報取得
         """
-        self.logger.info(f"race-id {race_id} into parse_race_result_page: start processing ...")
+        logger.info(f"race-id {race_id} into parse_race_result_page: start processing ...")
         try:
             soup = BeautifulSoup(html, 'html.parser')
             
             # レース情報
             race_data = self._get_race_data(date, race_id, soup)
-            self.logger.info(f"race_data: {race_data}")
+            logger.debug(f"race_data: {race_data}")
             # 地方競馬の場合は通過順マップを作成
             if is_nar_id(race_id):
                 pass_map = self._get_horse_passing_orders_map(soup)
@@ -213,19 +202,19 @@ class DataParser:
                 if not h_tag:
                     continue
                 result = self._get_entryhorse_result_from_row(row, race_id, pass_map)
-                self.logger.debug(f"result: {result}")
+                logger.debug(f"result: {result}")
                 if result:
                     race_result_list.append(race_data | result)
             return race_result_list
         except Exception as e:
-            self.logger.warning(f"エラーが発生しました: {e}")
+            logger.warning(f"エラーが発生しました: {e}")
             return None
         
     def _get_entryhorse_info_from_row(self, row: BeautifulSoup) -> dict:
         """
         テーブルから出走馬の情報を取得し、辞書にして返す
         """
-        self.logger.debug(f"get_entryhorse_info_from_row: start processing ...")
+        logger.debug(f"get_entryhorse_info_from_row: start processing ...")
         # 馬名・ID
         h_name, h_id = self._get_horse_name_and_horse_id(row)
 
@@ -255,7 +244,7 @@ class DataParser:
         """
         テーブルから出走馬の結果情報を取得し、辞書にして返す
         """
-        self.logger.debug(f"get_entryhorse_result_from_row: start processing ...")
+        logger.debug(f"get_entryhorse_result_from_row: start processing ...")
 
         is_nar = is_nar_id(race_id)
         
@@ -264,7 +253,6 @@ class DataParser:
         
         # 馬番取得
         horse_num = self._get_horse_umaban(row, is_nar, is_result_page=True)
-        self.logger.info(f"horse_num: {horse_num}")
         
         # 性齢：class="Age" を使用／中央はclass="Barei"を使用
         sex, age = self._get_horse_sex_and_age(row, is_result_page=True)            
@@ -366,7 +354,6 @@ class DataParser:
         # 頭数
         race_data2 = soup.select_one(SELECTOR_TAG_RACEDATA2)
         num_horses = get_num_horses_from_text(race_data2.get_text())
-        self.logger.debug(f"num_horses: {num_horses}")
         return surface, distance, weather, condition, num_horses
 
     def _get_horse_waku(self, soup: BeautifulSoup) -> str:
@@ -417,7 +404,7 @@ class DataParser:
             # 指定されたクラスの行をすべて取得
             corner_rows = soup.select(".RaceCommon_Table.Corner_Num tr")
             temp_pass_data = {}
-            self.logger.info(f"通過順： {corner_rows}")
+            logger.debug(f"通過順： {corner_rows}")
 
             for row in corner_rows:
                 th = row.find('th')
@@ -450,10 +437,10 @@ class DataParser:
             # 4. 全コーナー分を「1-1-2-2」形式の文字列に変換
             for h_num, ranks in temp_pass_data.items():
                 pass_map[h_num] = "-".join(ranks)
-                self.logger.debug(f"pass_map: {pass_map}")
+                logger.debug(f"pass_map: {pass_map}")
             return pass_map
         except Exception as e:
-            self.logger.warning(f"コーナー通過順の解析エラー: {e}")
+            logger.warning(f"コーナー通過順の解析エラー: {e}")
             return {}
 
     def _get_horse_name_and_horse_id(self, soup: BeautifulSoup, is_result_page: bool=False) -> list:

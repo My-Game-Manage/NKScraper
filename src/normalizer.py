@@ -1,4 +1,8 @@
 # 正規化用
+import logging
+
+# ロガーの取得（__name__ はファイル名/モジュール名になる）
+logger = logging.getLogger(__name__)
 
 import pandas as pd
 
