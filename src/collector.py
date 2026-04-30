@@ -12,13 +12,17 @@ import time
 from enum import Enum
 
 import pandas as pd
+import logging
+
+# ロガーの取得（__name__ はファイル名/モジュール名になる）
+logger = logging.getLogger(__name__)
+
 
 from src.constants.schema import NetkeibaPageType
 from src.netkeiba_client import NetKeibaClient
 from src.parser import DataParser
 from src.normalizer import DataNormalizer  # 先ほど提案した正規化クラス
 from src.utils.date_utils import normalize_date_format, get_today_jst
-from src.utils.logger import setup_logger
 from src.utils.helpers import (
     get_top_page_url, get_jyo_name,
     filter_race_ids_exclude_course, filter_race_ids_by_course, filter_race_ids_by_number,
@@ -40,10 +44,8 @@ class RaceDataCollector:
         初期化: 必要なコンポーネントのインスタンス化とディレクトリ準備
         """
         _CLASSNAME = "Collector"
-        # クラス名を名前としてロガーを作成
-        self.logger = setup_logger("Collector")
 
-        self.logger.info("Collectorを初期化しています...")
+        logger.info("Collectorを初期化しています...")
         
         # 1. 道具（コンポーネント）の準備
         self.client = NetKeibaClient(headless=headless)
@@ -64,26 +66,26 @@ class RaceDataCollector:
         """
         メインの実行メソッド
         """
-        self.logger.info("Collectorを実行開始します...")
+        logger.info("Collectorを実行開始します...")
         
         # 1. レースID一覧を取得（client）
         det_target_date = self._determine_target_date(target_date)
         target_race_ids = self._get_target_race_ids(det_target_date, course_filter, race_num_filter)
-        self.logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
+        logger.info(f"target_race_ids: {len(target_race_ids)}件取得しました")
 
         # 2. 各レースの処理（client＆normalizer）＞ソース取得・情報取得・整形・表記修正
         race_info_list, horse_info_list, horse_ids, race_result_list = [], [], [], []
         if is_result:
             race_result_list = self._get_race_result_from_ids(det_target_date, target_race_ids)
-            self.logger.info(f"race_result_list: {len(race_result_list)}件取得しました")
+            logger.info(f"race_result_list: {len(race_result_list)}件取得しました")
         else:
             race_info_list, horse_ids = self._get_race_infos_from_ids(det_target_date, target_race_ids)
-            self.logger.info(f"race_info_list: {len(race_info_list)}件取得しました")
-            self.logger.info(f"horse_ids: {len(horse_ids)}件取得しました")
+            logger.info(f"race_info_list: {len(race_info_list)}件取得しました")
+            logger.info(f"horse_ids: {len(horse_ids)}件取得しました")
             if horse_ids and not only_race:
                 # 馬レース履歴はまとめて取得
                 horse_info_list, sire_names_list = self._get_horse_infos_from_ids(horse_ids)
-                self.logger.info(f"horse_info_list: {len(horse_info_list)}件取得しました")
+                logger.info(f"horse_info_list: {len(horse_info_list)}件取得しました")
                 # 父母馬名の上書き
                 race_info_list = override_race_info_parents_name(race_info_list, sire_names_list)
             
@@ -91,16 +93,16 @@ class RaceDataCollector:
         if race_info_list:
             df = self.normalizer.ensure_dataframe(race_info_list)
             self._save_to_csv(self.normalizer.normalize_columns(df, NetkeibaPageType.SHUTUBA), det_target_date, NetkeibaPageType.SHUTUBA)
-            self.logger.info(f"race_info_listを保存しました")
+            logger.info(f"race_info_listを保存しました")
         if horse_info_list:
             self._save_to_csv(self.normalizer.ensure_dataframe(horse_info_list), det_target_date, NetkeibaPageType.HORSE)
-            self.logger.info(f"horse_info_listを保存しました")
+            logger.info(f"horse_info_listを保存しました")
         if race_result_list:
             df = self.normalizer.ensure_dataframe(race_result_list)
             self._save_to_csv(self.normalizer.normalize_columns(df, NetkeibaPageType.RESULT), det_target_date, NetkeibaPageType.RESULT)
-            self.logger.info(f"race_result_listを保存しました")
+            logger.info(f"race_result_listを保存しました")
 
-        self.logger.info("取得と保存が終了しました")
+        logger.info("取得と保存が終了しました")
 
     def _get_target_race_ids(self, date, course_codes, race_nums) -> list:
         """
@@ -114,7 +116,7 @@ class RaceDataCollector:
         # 指定がある場合はフィルタリングする
         if kaisai_ids and (course_codes or race_nums):
             filtered_kaisai_ids = self._get_filtered_kaisai_ids(kaisai_ids, course_codes, race_nums)
-            self.logger.info(f"kaisai_ids {len(kaisai_ids)}件から filtered_kaisai_ids {len(filtered_kaisai_ids)}にフィルタリングしました")
+            logger.info(f"kaisai_ids {len(kaisai_ids)}件から filtered_kaisai_ids {len(filtered_kaisai_ids)}にフィルタリングしました")
             return filtered_kaisai_ids
         else:
             return kaisai_ids
@@ -129,7 +131,7 @@ class RaceDataCollector:
         
         kaisai_ids = self.parser.extract_race_ids(html)
         
-        self.logger.info(f"kaisai_ids: {len(kaisai_ids)}件取得しました")
+        logger.info(f"kaisai_ids: {len(kaisai_ids)}件取得しました")
         return kaisai_ids
 
     def _get_filtered_kaisai_ids(self, kaisai_ids: list, course_codes: list, race_nums: list) -> list:
@@ -138,14 +140,14 @@ class RaceDataCollector:
         """
         # 帯広と不明は除外
         filtered_ids = filter_race_ids_exclude_course(kaisai_ids)
-        self.logger.debug(f"開催場所：{course_codes}")
+        logger.debug(f"開催場所：{course_codes}")
         # コースでフィルタリング
         if course_codes:
             filtered_ids = filter_race_ids_by_course(filtered_ids, course_codes)
-            self.logger.debug(f"course_codes filtering >>>: {len(filtered_ids)}\n{filtered_ids}")
+            logger.debug(f"course_codes filtering >>>: {len(filtered_ids)}\n{filtered_ids}")
         if race_nums:
             filtered_ids = filter_race_ids_by_number(filtered_ids, race_nums)
-            self.logger.debug(f"race_nums filtering >>>: {len(filtered_ids)}")
+            logger.debug(f"race_nums filtering >>>: {len(filtered_ids)}")
         return filtered_ids
 
     def _get_race_infos_from_ids(self, date: str, race_ids: list):
@@ -172,7 +174,7 @@ class RaceDataCollector:
                 h_url = get_horse_url(h_id)
                 h_html = self.client.get_html(h_url)
                 df, sire_names = self.parser.parse_horse_history(h_html, h_id)
-                self.logger.debug(f"get {h_id} data >> {df}")
+                logger.debug(f"get {h_id} data >> {df}")
                 if sire_names:
                     sire_names_list.append(sire_names)
                 if not df.empty:
@@ -222,7 +224,7 @@ class RaceDataCollector:
 
         data_df.to_csv(target_path, index=False, encoding="utf_8_sig")
         
-        self.logger.info(f"--- 保存完了: {target_path} ---")
+        logger.info(f"--- 保存完了: {target_path} ---")
         
     def _determine_target_date(self, input_date: str) -> str:
         """
